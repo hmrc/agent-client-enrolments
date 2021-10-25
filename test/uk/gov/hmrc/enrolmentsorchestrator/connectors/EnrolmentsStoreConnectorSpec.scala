@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import org.mockito.ArgumentMatchers.{any, contains}
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.scalatest.MockitoSugar
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -38,7 +35,7 @@ class EnrolmentsStoreConnectorSpec extends UnitSpec with MockitoSugar {
     "connect to EnrolmentsStore and return HttpResponse" in {
       val testHttpResponse = HttpResponse(200, "")
       val enrolmentKey = "enrolmentKey"
-      when(mockHttpClient.GET[HttpResponse](contains(enrolmentKey), any(), any())(any(), any(), any()))
+      when(mockHttpClient.GET[HttpResponse](contains(enrolmentKey), any, any)(any, any, any))
         .thenReturn(Future.successful(testHttpResponse))
       await(connector.es1GetPrincipalGroups(enrolmentKey)) shouldBe testHttpResponse
     }

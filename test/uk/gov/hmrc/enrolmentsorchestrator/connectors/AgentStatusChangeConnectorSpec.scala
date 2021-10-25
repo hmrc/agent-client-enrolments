@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import org.mockito.ArgumentMatchers.{any, contains}
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.scalatest.MockitoSugar
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.http.HttpResponse
@@ -38,7 +36,7 @@ class AgentStatusChangeConnectorSpec extends UnitSpec with MockitoSugar {
     "connect to AgentStatusChange and return HttpResponse" in {
       val testHttpResponse = HttpResponse(200, "")
       val arn = "arn"
-      when(mockHttpClient.DELETE[HttpResponse](contains(arn), any())(any(), any(), any())).thenReturn(Future.successful(testHttpResponse))
+      when(mockHttpClient.DELETE[HttpResponse](contains(arn), any)(any, any, any)).thenReturn(Future.successful(testHttpResponse))
       await(connector.agentStatusChangeToTerminate(arn)) shouldBe testHttpResponse
     }
   }

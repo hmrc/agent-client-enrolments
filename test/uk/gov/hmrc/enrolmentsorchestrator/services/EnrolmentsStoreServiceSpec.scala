@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.services
 
-import org.mockito.ArgumentMatchers.{any, contains}
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.scalatest.MockitoSugar
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.{EnrolmentsStoreConnector, TaxEnrolmentConnector}
@@ -47,9 +45,9 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         val enrolmentsStoreHttpResponse = HttpResponse(200, json = Json.toJson(PrincipalGroupIds(List(groupId))), Map.empty)
         val taxEnrolmentHttpResponse = HttpResponse(204, "")
 
-        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any()))
+        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any))
           .thenReturn(Future.successful(enrolmentsStoreHttpResponse))
-        when(mockTaxEnrolmentConnector.es9DeallocateGroup(contains(groupId), contains(enrolmentKey))(any(), any()))
+        when(mockTaxEnrolmentConnector.es9DeallocateGroup(contains(groupId), contains(enrolmentKey))(any, any))
           .thenReturn(Future.successful(taxEnrolmentHttpResponse))
 
         await(enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)) shouldBe taxEnrolmentHttpResponse
@@ -65,7 +63,7 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         val testHttpResponse = HttpResponse(204, "")
         val enrolmentKey = "enrolmentKey"
 
-        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any()))
+        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any))
           .thenReturn(Future.successful(testHttpResponse))
 
         await(enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)) shouldBe testHttpResponse
@@ -87,9 +85,9 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         val enrolmentsStoreHttpResponse = HttpResponse(200, json = Json.toJson(PrincipalGroupIds(List(groupId))), Map.empty)
         val taxEnrolmentHttpResponse = HttpResponse(400, "")
 
-        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any()))
+        when(mockEnrolmentsStoreConnector.es1GetPrincipalGroups(contains(enrolmentKey))(any))
           .thenReturn(Future.successful(enrolmentsStoreHttpResponse))
-        when(mockTaxEnrolmentConnector.es9DeallocateGroup(contains(groupId), contains(enrolmentKey))(any(), any()))
+        when(mockTaxEnrolmentConnector.es9DeallocateGroup(contains(groupId), contains(enrolmentKey))(any, any))
           .thenReturn(Future.successful(taxEnrolmentHttpResponse))
 
         await(enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)) shouldBe taxEnrolmentHttpResponse

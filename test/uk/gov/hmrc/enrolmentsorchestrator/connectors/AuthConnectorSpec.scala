@@ -16,15 +16,12 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.scalatest.MockitoSugar
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.models.PrivilegedApplicationClientLogin
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -39,7 +36,7 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar {
   "AuthConnector" should {
     "connect to auth to create session" in {
       val testHttpResponse = HttpResponse(200, "", headers = Map(AUTHORIZATION -> Seq(AUTHORIZATION)))
-      when(mockHttpClient.POST[PrivilegedApplicationClientLogin, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+      when(mockHttpClient.POST[PrivilegedApplicationClientLogin, HttpResponse](any, any, any)(any, any, any, any))
         .thenReturn(Future.successful(testHttpResponse))
       await(connector.createBearerToken("applicationName")).header(AUTHORIZATION) shouldBe Some(AUTHORIZATION)
     }

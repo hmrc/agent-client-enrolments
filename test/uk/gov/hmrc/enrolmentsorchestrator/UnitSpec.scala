@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator
 
-import org.scalatest.{Matchers, OptionValues, WordSpecLike}
-import play.api.mvc.Result
-import uk.gov.hmrc.http.HeaderCarrier
-import play.api.mvc.Request
+import org.scalatest.OptionValues
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
+trait UnitSpec extends AnyWordSpec with Matchers with OptionValues {
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
   implicit val request: Request[_] = FakeRequest()

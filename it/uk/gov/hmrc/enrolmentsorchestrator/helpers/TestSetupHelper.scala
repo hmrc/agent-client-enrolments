@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.helpers
 
-import java.nio.charset.StandardCharsets.UTF_8
-import java.util.Base64
-
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpecLike}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.test.WsTestClient
 import uk.gov.hmrc.integration.ServiceSpec
 
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Base64
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-trait TestSetupHelper extends WordSpecLike
+trait TestSetupHelper extends AnyWordSpec
   with Matchers
   with WsTestClient
   with BeforeAndAfterEach

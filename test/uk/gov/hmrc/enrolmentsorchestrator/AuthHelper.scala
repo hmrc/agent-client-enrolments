@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.scalatest.MockitoSugar
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.AuthConnector
 import uk.gov.hmrc.enrolmentsorchestrator.services.AuthService
@@ -32,7 +30,7 @@ trait AuthHelper extends MockitoSugar {
   val authService: AuthService = new AuthService(mockAuthConnector)
 
   val testHttpResponse = HttpResponse(200, "", headers = Map(AUTHORIZATION -> Seq("BEARER AUTHORIZATION")))
-  when(mockAuthConnector.createBearerToken(any())(any(), any()))
+  when(mockAuthConnector.createBearerToken(any)(any, any))
     .thenReturn(Future.successful(testHttpResponse))
 
 }
