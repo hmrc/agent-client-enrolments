@@ -22,7 +22,6 @@ import uk.gov.hmrc.enrolmentsorchestrator.services.EnrolmentsStoreService
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter
 
-
 class AgentControllerISpec extends TestSetupHelper with LogCapturing {
 
   override def afterEach {
