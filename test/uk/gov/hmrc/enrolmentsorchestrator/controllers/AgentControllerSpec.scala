@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite {
 
-  "DELETE /agent-client-enrolments/agents/:ARN?terminationDate=Option[Long] ?= None" should {
+  "DELETE /enrolments-orchestrator/agents/:ARN?terminationDate=Option[Long] ?= None" should {
 
     "return 200, Request received and the attempt at deletion will be processed" in new Setup {
       val testHttpResponse = HttpResponse(204, "done")

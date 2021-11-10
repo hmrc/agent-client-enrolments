@@ -35,7 +35,7 @@ trait TestSetupHelper extends AnyWordSpec
   with EnrolmentStoreWireMockSetup
   with AgentStatusChangeWireMockSetup {
 
-  val es9DeleteBaseUrl = "/agent-client-enrolments/agents"
+  val es9DeleteBaseUrl = "/enrolments-orchestrator/agents"
   val testARN = "AARN123"
 
   implicit val defaultTimeout: FiniteDuration = 3.minutes

@@ -8,7 +8,7 @@ Agents and Traders require the capability to have their accounts and associated 
 
 The agent-client-enrolments service exposes a single API call:
 
-### DELETE /agent-client-enrolments/agents/:ARN?terminationDate={termination Long}
+### DELETE /enrolments-orchestrator/agents/:ARN?terminationDate={termination Long}
 
  - terminationDate is optional, in milliseconds. Defaults to the current time
 
