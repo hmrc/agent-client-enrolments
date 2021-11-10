@@ -29,7 +29,7 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing {
     wireMockAgentStatusChangeServer.stop()
   }
 
-  "DELETE      /enrolments-orchestrator/agents/:arn" should {
+  "DELETE      /agent-client-enrolments/agents/:arn" should {
 
     "return 200" when {
       "Request received and the attempt at deletion will be processed" in {
@@ -45,7 +45,7 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing {
                 .delete()
             ).status shouldBe 200
             logEvents.length shouldBe 1
-            logEvents.head.toString.contains("DELETE /enrolments-orchestrator/agents/AARN123 200") shouldBe true
+            logEvents.head.toString.contains("DELETE /agent-client-enrolments/agents/AARN123 200") shouldBe true
           }
         }
       }

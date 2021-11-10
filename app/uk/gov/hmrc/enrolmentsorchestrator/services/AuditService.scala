@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: ExecutionContext) extends Logging with BackendHeaderCarrierProvider {
   def auditDeleteRequest(agentReferenceNumber: String, terminationDate: Long)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "enrolments-orchestrator",
+      "agent-client-enrolments",
       "AgentDeleteRequest",
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
@@ -45,7 +45,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
 
   def auditSuccessfulAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "enrolments-orchestrator",
+      "agent-client-enrolments",
       "AgentDeleteResponse",
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
@@ -61,7 +61,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
 
   def auditFailedAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "enrolments-orchestrator",
+      "agent-client-enrolments",
       "AgentDeleteResponse",
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,

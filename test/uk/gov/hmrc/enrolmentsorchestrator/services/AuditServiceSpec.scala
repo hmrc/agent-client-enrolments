@@ -42,7 +42,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
       val event = captor.value
 
-      event.auditSource shouldBe "enrolments-orchestrator"
+      event.auditSource shouldBe "agent-client-enrolments"
       event.auditType shouldBe "AgentDeleteRequest"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
@@ -72,7 +72,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
       val event = captor.value
 
-      event.auditSource shouldBe "enrolments-orchestrator"
+      event.auditSource shouldBe "agent-client-enrolments"
       event.auditType shouldBe "AgentDeleteResponse"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
@@ -104,7 +104,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
       val event = captor.value
 
-      event.auditSource shouldBe "enrolments-orchestrator"
+      event.auditSource shouldBe "agent-client-enrolments"
       event.auditType shouldBe "AgentDeleteResponse"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,

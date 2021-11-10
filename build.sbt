@@ -6,7 +6,7 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import uk.gov.hmrc.ExternalService
 
 
-val appName = "enrolments-orchestrator"
+val appName = "agent-client-enrolments"
 
 lazy val externalServices = List(
   ExternalService("AUTH"),

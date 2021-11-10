@@ -1,14 +1,14 @@
 
-# enrolments-orchestrator
+# agent-client-enrolments
 
 ## Summary
 
 
 Agents and Traders require the capability to have their accounts and associated access suspended and terminated, the service is to fulfil this functionality.
 
-The enrolments-orchestrator service exposes a single API call:
+The agent-client-enrolments service exposes a single API call:
 
-### DELETE /enrolments-orchestrator/agents/:ARN?terminationDate={termination Long}
+### DELETE /agent-client-enrolments/agents/:ARN?terminationDate={termination Long}
 
  - terminationDate is optional, in milliseconds. Defaults to the current time
 
