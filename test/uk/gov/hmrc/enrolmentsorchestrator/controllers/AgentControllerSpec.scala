@@ -42,9 +42,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
 
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any))
         .thenReturn(Future.successful(testHttpResponse))
-      when(mockAuthService.createBearerToken(eqTo(Some(basicAuthHeader)))(any, any))
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditSuccessfulAgentDeleteResponse(any, any, any)(any)
@@ -88,11 +88,11 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
     "return 401, Request received but tax-enrolment throw 401 response" in new Setup {
       val testAgentStatusChangeHttpResponse = HttpResponse(200, "done")
 
-      when(mockAuthService.createBearerToken(eqTo(Some(basicAuthHeader)))(any, any))
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any))
         .thenReturn(Future.failed(UpstreamErrorResponse("notAuthed", 401, 401)))
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
@@ -107,11 +107,11 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
 
       val testAgentStatusChangeHttpResponse = HttpResponse(200, "done")
 
-      when(mockAuthService.createBearerToken(eqTo(Some(basicAuthHeader)))(any, any))
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any))
         .thenReturn(Future.successful(testHttpResponse))
 
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
@@ -125,12 +125,12 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
     "return 500 if there are anything wrong with down stream such as EnrolmentsStore" in new Setup {
       val testAgentStatusChangeHttpResponse = HttpResponse(200, "done")
 
-      when(mockAuthService.createBearerToken(eqTo(Some(basicAuthHeader)))(any, any))
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
 
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(any))
         .thenReturn(Future.failed(new RuntimeException))
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
@@ -146,6 +146,36 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
       val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+    }
+  }
+
+  "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
+
+    "return 200 when valid payload received" in new Setup {
+      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(any))
+        .thenReturn(Future.successful(()))
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
+        .thenReturn(Future.successful(Some(Authorization("pls"))))
+
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      status(result) shouldBe OK
+    }
+
+    "return 401 when invalid basic auth" in new Setup {
+      when(mockAuthService.getBasicAuth(any)).thenReturn(None)
+
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      status(result) shouldBe UNAUTHORIZED
+    }
+
+    "return 500 when internal server error" in new Setup {
+      when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
+        .thenReturn(Future.successful(Some(Authorization("pls"))))
+      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(any))
+        .thenReturn(Future.failed(new Throwable))
+
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }

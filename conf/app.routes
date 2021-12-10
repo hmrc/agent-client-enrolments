@@ -1,3 +1,4 @@
 # microservice specific routes
 
 DELETE      /agents/:arn   uk.gov.hmrc.enrolmentsorchestrator.controllers.AgentController.deleteByARN(arn: String, terminationDate: Option[Long])
+DELETE      /relationships/:arn/service/:service/client/:clientIdType/:clientId uk.gov.hmrc.enrolmentsorchestrator.controllers.AgentController.deleteInsolventTraders(arn: String, service: String, clientIdType: String, clientId: String)

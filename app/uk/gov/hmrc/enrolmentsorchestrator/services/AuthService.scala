@@ -53,10 +53,7 @@ class AuthService @Inject() (authConnector: AuthConnector) {
 
   }
 
-  def createBearerToken(basicAuthentication: Option[BasicAuthentication])(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Authorization]] = {
-    basicAuthentication.fold(Future successful (None: Option[Authorization])) {
-      ba => authConnector.createBearerToken(ba.username).map(_.header(AUTHORIZATION).map(bearerToken => Authorization(bearerToken)))
-    }
-  }
+  def createBearerToken(basicAuthentication: BasicAuthentication)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Authorization]] =
+    authConnector.createBearerToken(basicAuthentication.username).map(_.header(AUTHORIZATION).map(bearerToken => Authorization(bearerToken)))
 
 }

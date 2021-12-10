@@ -25,11 +25,13 @@ import uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter
 class AgentControllerISpec extends TestSetupHelper with LogCapturing {
 
   override def afterEach {
-    wireMockEnrolmentStoreServer.stop()
-    wireMockAgentStatusChangeServer.stop()
+    wireMockEnrolmentStoreServer.resetAll()
+    wireMockAgentStatusChangeServer.resetAll()
+    wireMockAgentClientRelationshipsServer.resetAll()
+    super.afterEach()
   }
 
-  "DELETE      /enrolments-orchestrator/agents/:arn" should {
+  "DELETE /enrolments-orchestrator/agents/:arn" should {
 
     "return 200" when {
       "Request received and the attempt at deletion will be processed" in {
@@ -118,4 +120,38 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing {
 
   }
 
+  // DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId
+  "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
+    "return 200" in {
+      startDeleteRelationship
+      startDeleteEnrolmentsForGroup
+
+      withClient { wsClient =>
+        withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
+          await(
+            wsClient.url(resource("/enrolments-orchestrator/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
+              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+              .delete()
+          ).status shouldBe 200
+        }
+      }
+    }
+  }
+
+  "DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
+    "return 200" in {
+      startDeleteRelationship
+      startDeleteEnrolmentsForGroup
+
+      withClient { wsClient =>
+        withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
+          await(
+            wsClient.url(resource("/agent-client-enrolments/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
+              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+              .delete()
+          ).status shouldBe 200
+        }
+      }
+    }
+  }
 }
