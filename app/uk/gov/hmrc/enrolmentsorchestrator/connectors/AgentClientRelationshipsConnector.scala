@@ -16,18 +16,25 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
+import play.api.Logging
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 @Singleton()
-class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging  {
 
   lazy val baseUrl: String = appConfig.agentClientRelationshipsBaseUrl
 
   def deleteRelationship(arn: String, service: String, clientIdType: String, clientId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     httpClient.DELETE(s"$baseUrl/agent/$arn/service/$service/client/$clientIdType/$clientId")
+      .andThen {
+        case Success(_) => logger.info(s"deleting agent client relationships succeeded for enrolmentKey: $service~$clientIdType~$clientId")
+        case Failure(exception) => logger.info(s"deleting agent client relationships failed for enrolmentKey: $service~$clientIdType~$clientId the response is ${exception.getMessage}")
+      }
 
 }

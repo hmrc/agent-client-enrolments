@@ -16,17 +16,22 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
+import play.api.Logging
+
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.models.DelegatedGroupIds
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds._
+
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.HttpReads.Implicits.{readRaw, readFromJson}
+import uk.gov.hmrc.http.HttpReads.Implicits.{readFromJson, readRaw}
+
+import scala.util.{Failure, Success}
 
 @Singleton()
-class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging  {
 
   lazy val enrolmentsStoreBaseUrl: String = appConfig.enrolmentsStoreBaseUrl
 
@@ -46,5 +51,9 @@ class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: App
 
   def es9DeallocateDelegatedEnrolment(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     httpClient.DELETE(s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false")
+      .andThen {
+        case Success(_) => logger.info(s"deleting agent client relationships succeeded for enrolmentKey: $enrolmentKey")
+        case Failure(exception) => logger.info(s"deleting agent client relationships failed for enrolmentKey: $enrolmentKey the response is ${exception.getMessage}")
+      }
 
 }
