@@ -22,8 +22,7 @@ import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.AgentStatusChangeConnector
 import uk.gov.hmrc.enrolmentsorchestrator.models.BasicAuthentication
 import uk.gov.hmrc.enrolmentsorchestrator.services.{AuditService, AuthService, EnrolmentsStoreService}
-import uk.gov.hmrc.http.Authorization
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -41,22 +40,20 @@ class AgentController @Inject() (
 
   //more details about this end point: https://confluence.tools.tax.service.gov.uk/display/TM/SI+-+Enrolment+Orchestrator
   def deleteByARN(arn: String, terminationDate: Option[Long]): Action[AnyContent] = Action.async { implicit request =>
-    val expectedAuth = appConfig.expectedAuth
-    val basicAuth = authService.getBasicAuth(request.headers)
-
     val tDate = terminationDate.getOrElse(DateTime.now.getMillis)
     val enrolmentKey = s"HMRC-AS-AGENT~AgentReferenceNumber~$arn"
 
     auditService.auditDeleteRequest(arn, tDate)
 
-    if (basicAuth.contains(expectedAuth)) {
-      callAgentStatusChangeToTerminate(arn, tDate) {
-        continueES9(basicAuth, arn, tDate, enrolmentKey, request)
-      }
-    } else {
-      auditService.auditFailedAgentDeleteResponse(arn, tDate, 401, "BasicAuthentication failed")
-      Future.successful(Unauthorized(s"BasicAuthentication failed"))
-    }
+    validateBasicAuth(request.headers, appConfig.expectedAuth)
+      .fold {
+        auditService.auditFailedAgentDeleteResponse(arn, tDate, 401, "BasicAuthentication failed")
+        Future.successful(Unauthorized(s"BasicAuthentication failed"))
+      } (basicAuth =>
+        callAgentStatusChangeToTerminate(arn, tDate)(
+          continueES9(basicAuth, arn, tDate, enrolmentKey)
+        ))
+
   }
 
   private def callAgentStatusChangeToTerminate(arn: String, tDate: Long)(continueES9: => Future[Result])(implicit request: Request[_]): Future[Result] = {
@@ -66,19 +63,15 @@ class AgentController @Inject() (
         auditService.auditFailedAgentDeleteResponse(
           arn, tDate, agentStatusChangeRes.status, agentStatusChangeRes.body
         )
-        Future.successful(new Status(agentStatusChangeRes.status)(agentStatusChangeRes.body))
+        Future.failed(UpstreamErrorResponse(agentStatusChangeRes.body, agentStatusChangeRes.status))
       }
     }.recover { case ex => handleRecover(ex, arn, tDate, request) }
   }
 
-  private def createBearerToken(basicAuth: Option[BasicAuthentication])(implicit request: Request[_]): Future[Option[Authorization]] = {
-    authService.createBearerToken(basicAuth)
-  }
-
-  private def continueES9(basicAuth: Option[BasicAuthentication], arn: String, tDate: Long, enrolmentKey: String, request: Request[_]): Future[Result] = {
-    createBearerToken(basicAuth)(request).flatMap { bearerToken =>
+  private def continueES9(basicAuth: BasicAuthentication, arn: String, tDate: Long, enrolmentKey: String)(implicit request: Request[_]): Future[Result] = {
+    authService.createBearerToken(basicAuth).flatMap { bearerToken =>
       implicit val newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
-      enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey).map { res =>
+      enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)(newHeaderCarrier).map { res =>
         if (res.status == 204) {
           auditService.auditSuccessfulAgentDeleteResponse(arn, tDate, res.status)(request)
           Ok(res.body)
@@ -92,12 +85,32 @@ class AgentController @Inject() (
 
   private def handleRecover(exception: Throwable, arn: String, tDate: Long, request: Request[_]): Result = {
     exception match {
-      case e: Upstream4xxResponse =>
-        auditService.auditFailedAgentDeleteResponse(arn, tDate, e.upstreamResponseCode, e.message)(request)
-        new Status(e.upstreamResponseCode)(s"${e.message}")
+      case UpstreamErrorResponse(message, code, _, _) if code != 404 =>
+        auditService.auditFailedAgentDeleteResponse(arn, tDate, code, message)(request)
+        new Status(code)(s"${message}")
       case _ =>
         auditService.auditFailedAgentDeleteResponse(arn, tDate, 500, "Internal service error")(request)
         InternalServerError("Internal service error")
     }
+  }
+
+  private def validateBasicAuth(headers: Headers, expectedAuth: BasicAuthentication): Option[BasicAuthentication] = {
+    authService.getBasicAuth(headers)
+      .filter(_ == expectedAuth)
+  }
+
+  def deleteInsolventTraders(arn: String, service: String, clientIdType: String, clientId: String): Action[AnyContent] = Action.async { implicit request =>
+    validateBasicAuth(request.headers, appConfig.expectedAuth)
+      .fold(
+        Future.successful(Unauthorized)
+      )(basicAuth => (for {
+          bearerToken <- authService.createBearerToken(basicAuth)
+          newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
+          _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(newHeaderCarrier)
+        } yield Ok)
+          .recover {
+            case _ => InternalServerError
+          }
+        )
   }
 }

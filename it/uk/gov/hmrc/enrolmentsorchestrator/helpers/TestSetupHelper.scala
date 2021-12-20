@@ -33,7 +33,8 @@ trait TestSetupHelper extends AnyWordSpec
   with BeforeAndAfterEach
   with ServiceSpec
   with EnrolmentStoreWireMockSetup
-  with AgentStatusChangeWireMockSetup {
+  with AgentStatusChangeWireMockSetup
+  with AgentClientRelationshipsWireMockSetup {
 
   val es9DeleteBaseUrl = "/enrolments-orchestrator/agents"
   val testARN = "AARN123"

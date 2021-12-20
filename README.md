@@ -6,9 +6,16 @@
 
 Agents and Traders require the capability to have their accounts and associated access suspended and terminated, the service is to fulfil this functionality.
 
-The agent-client-enrolments service exposes a single API call:
+## Public API
 
-### DELETE /enrolments-orchestrator/agents/:ARN?terminationDate={termination Long}
+| Path                               | Description                                          |
+| ---------------------------------  | ---------------------------------------------------- |
+| [DELETE /agent-client-enrolments/agents/:ARN?terminationDate={termination Long}]() | Calling the endpoint will cause the agent to be deleted |
+| [DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId]() | Following a VAT trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This endpoint is to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for in Insolvent client. As per Insolvency SDD.
+ |
+
+
+### DELETE /agent-client-enrolments/agents/:ARN?terminationDate={termination Long}
 
  - terminationDate is optional, in milliseconds. Defaults to the current time
 
@@ -22,6 +29,18 @@ Responds with:
 | 500      | Service error |
 
 More details about this end point: https://confluence.tools.tax.service.gov.uk/display/TM/SI+-+Enrolment+Orchestrator
+
+
+### DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId
+
+Responds with:
+
+| Status        | Message       |
+|:-------------:|---------------|
+| 200  | Valid payload received. The attempt at deletion will be processed. Repeated calling with the same payload will always yield 200 |
+| 400  | Invalid payload or payload data insufficient for processing |
+| 401  | Unauthorised - the provided bearer token is either expired or not valid |
+| 50X  | Service error |
 
 ### License
 

@@ -31,6 +31,7 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val enrolmentsStoreBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
   val taxEnrolmentsBaseUrl: String = servicesConfig.baseUrl("tax-enrolments")
   val agentStatusChangeBaseUrl: String = servicesConfig.baseUrl("agent-status-change")
+  val agentClientRelationshipsBaseUrl: String = servicesConfig.baseUrl("agent-client-relationships")
 
   def expectedAuth: BasicAuthentication = {
     val username = config.get[String]("basicAuthentication.username")

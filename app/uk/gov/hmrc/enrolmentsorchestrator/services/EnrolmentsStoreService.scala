@@ -18,17 +18,22 @@ package uk.gov.hmrc.enrolmentsorchestrator.services
 
 import play.api.Logging
 import play.api.libs.json.Json
-import uk.gov.hmrc.enrolmentsorchestrator.connectors.{EnrolmentsStoreConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.enrolmentsorchestrator.connectors._
 import uk.gov.hmrc.enrolmentsorchestrator.models.PrincipalGroupIds
+import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class EnrolmentsStoreService @Inject() (enrolmentsStoreConnector: EnrolmentsStoreConnector, taxEnrolmentConnector: TaxEnrolmentConnector) extends Logging {
+class EnrolmentsStoreService @Inject() (
+    enrolmentsStoreConnector:          EnrolmentsStoreConnector,
+    taxEnrolmentConnector:             TaxEnrolmentConnector,
+    agentClientRelationshipsConnector: AgentClientRelationshipsConnector
+)(implicit ec: ExecutionContext) extends Logging {
 
-  def terminationByEnrolmentKey(enrolmentKey: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[HttpResponse] = {
+  def terminationByEnrolmentKey(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     enrolmentsStoreConnector.es1GetPrincipalGroups(enrolmentKey).flatMap { response =>
       response.status match {
         case 200 =>
@@ -55,5 +60,22 @@ class EnrolmentsStoreService @Inject() (enrolmentsStoreConnector: EnrolmentsStor
           Future.successful(response)
       }
     }
+  }
+
+  def deleteEnrolments(arn: String, service: String, clientIdType: String, clientId: String)(implicit hc: HeaderCarrier): Future[Unit] = {
+    val enrolmentKey = s"$service~$clientIdType~$clientId"
+
+    (for {
+      _ <- agentClientRelationshipsConnector.deleteRelationship(arn, service, clientIdType, clientId)
+      groupIds <- enrolmentsStoreConnector.es1GetDelegatedGroups(enrolmentKey)
+      _ = groupIds.delegatedGroupIds.map(groupId =>
+        enrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(groupId, enrolmentKey))
+    } yield ())
+      .recover {
+        case e =>
+          logger.error(s"Delete insolvent traders failed for enrolmentKey: $enrolmentKey the response is ${e.getMessage}")
+      }
+
+    Future.successful(())
   }
 }

@@ -50,10 +50,7 @@ class AuthServiceSpec extends UnitSpec with AuthHelper {
     "able to create a bearer token" when {
       "there is a BasicAuthentication, return Authorization" in {
         val ba = BasicAuthentication("AgentTermDESUser", "password")
-        await(authService.createBearerToken(Some(ba))) shouldBe Some(Authorization(s"BEARER AUTHORIZATION"))
-      }
-      "there is no BasicAuthentication, return None" in {
-        await(authService.createBearerToken(None)) shouldBe None
+        await(authService.createBearerToken(ba)) shouldBe Some(Authorization(s"BEARER AUTHORIZATION"))
       }
     }
 

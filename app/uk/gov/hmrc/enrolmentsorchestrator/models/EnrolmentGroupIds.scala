@@ -19,7 +19,9 @@ package uk.gov.hmrc.enrolmentsorchestrator.models
 import play.api.libs.json.{Format, Json}
 
 case class PrincipalGroupIds(principalGroupIds: List[String])
+case class DelegatedGroupIds(delegatedGroupIds: List[String])
 
-object PrincipalGroupIds {
-  implicit val format: Format[PrincipalGroupIds] = Json.format[PrincipalGroupIds]
+object EnrolmentGroupIds {
+  implicit val principalFormat: Format[PrincipalGroupIds] = Json.format[PrincipalGroupIds]
+  implicit val delegatedFormat: Format[DelegatedGroupIds] = Json.format[DelegatedGroupIds]
 }
