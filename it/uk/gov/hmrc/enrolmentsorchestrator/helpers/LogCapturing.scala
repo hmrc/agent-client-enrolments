@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,16 @@ import scala.collection.JavaConverters._
 
 trait LogCapturing {
 
-  def withCaptureOfLoggingFrom(logger: Logger)(body: (=> List[ILoggingEvent]) => Unit) {
+  def withCaptureOfLoggingFrom(loggerLikes: LoggerLike*)(body: (=> List[ILoggingEvent]) => Unit) {
     val appender = new ListAppender[ILoggingEvent]()
-    appender.setContext(logger.getLoggerContext)
     appender.start()
-    logger.addAppender(appender)
-    logger.setLevel(Level.ALL)
-    logger.setAdditive(true)
-    body(appender.list.asScala.toList)
-  }
 
-  def withCaptureOfLoggingFrom(logger: LoggerLike)(body: (=> List[ILoggingEvent]) => Unit) {
-    withCaptureOfLoggingFrom(logger.logger.asInstanceOf[Logger])(body)
-  }
+    for (loggerLike <- loggerLikes){
+      val logger = loggerLike.logger.asInstanceOf[Logger]
+      logger.addAppender(appender)
+      logger.setLevel(Level.ALL)
+      logger.setAdditive(true)
+    }
+
+    body(appender.list.asScala.toList)  }
 }

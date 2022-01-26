@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.enrolmentsorchestrator.models
+package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
+import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 
-case class PrincipalGroupIds(principalGroupIds: List[String])
-case class DelegatedGroupIds(delegatedGroupIds: List[String])
+class ConnectorUtilsSpec extends UnitSpec {
 
-object EnrolmentGroupIds {
-  implicit val principalFormat: Format[PrincipalGroupIds] = Json.format[PrincipalGroupIds]
-  implicit val delegatedFormat: Format[DelegatedGroupIds] = Json.format[DelegatedGroupIds]
+  "hashString" should {
+    "only show last 3 letters" in {
+      hashString("123456") shouldBe "***456"
+      hashString("123") shouldBe "***"
+      hashString("12") shouldBe "***"
+    }
+  }
+
 }

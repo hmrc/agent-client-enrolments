@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val enrolmentsStoreBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
   val taxEnrolmentsBaseUrl: String = servicesConfig.baseUrl("tax-enrolments")
   val agentStatusChangeBaseUrl: String = servicesConfig.baseUrl("agent-status-change")
-  val agentClientRelationshipsBaseUrl: String = servicesConfig.baseUrl("agent-client-relationships")
+  val agentClientAuthorisationBaseUrl: String = servicesConfig.baseUrl("agent-client-authorisation")
 
   def expectedAuth: BasicAuthentication = {
     val username = config.get[String]("basicAuthentication.username")

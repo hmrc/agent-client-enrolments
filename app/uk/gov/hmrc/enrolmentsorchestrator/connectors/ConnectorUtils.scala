@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.enrolmentsorchestrator.models
+package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import play.api.libs.json.{Format, Json}
+object ConnectorUtils {
 
-case class PrincipalGroupIds(principalGroupIds: List[String])
-case class DelegatedGroupIds(delegatedGroupIds: List[String])
+  def hashString(s: String): String =
+    if (s.length > 3) s"***${s.drop(s.length - 3)}"
+    else "***"
 
-object EnrolmentGroupIds {
-  implicit val principalFormat: Format[PrincipalGroupIds] = Json.format[PrincipalGroupIds]
-  implicit val delegatedFormat: Format[DelegatedGroupIds] = Json.format[DelegatedGroupIds]
 }

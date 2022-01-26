@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
 import play.api.Logging
+import play.api.http.HttpVerbs
 
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
+import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.enrolmentsorchestrator.models.DelegatedGroupIds
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.HttpReads.Implicits.{readFromJson, readRaw}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.util.{Failure, Success}
 
 @Singleton()
-class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging  {
+class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
 
   lazy val enrolmentsStoreBaseUrl: String = appConfig.enrolmentsStoreBaseUrl
 
@@ -46,14 +46,22 @@ class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: App
     httpClient.POSTEmpty[HttpResponse](url).map(_ => ())
   }
 
-  def es1GetDelegatedGroups(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[DelegatedGroupIds] =
-    httpClient.GET[DelegatedGroupIds](s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=delegated")
-
-  def es9DeallocateDelegatedEnrolment(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    httpClient.DELETE(s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false")
+  def es1GetDelegatedGroups(enrolmentKey: String)(implicit hc: HeaderCarrier, rds: HttpReads[DelegatedGroupIds]): Future[DelegatedGroupIds] = {
+    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=delegated"
+    httpClient.GET[HttpResponse](url)
       .andThen {
-        case Success(_) => logger.info(s"deleting agent client relationships succeeded for enrolmentKey: $enrolmentKey")
-        case Failure(exception) => logger.info(s"deleting agent client relationships failed for enrolmentKey: $enrolmentKey the response is ${exception.getMessage}")
+        case Success(response) => logger.info(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups returned ${response.status}")
+        case Failure(_)        => logger.error(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups failed")
+      }.map (rds.read(HttpVerbs.POST, url, _))
+  }
+
+  def es9DeallocateDelegatedEnrolment(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false"
+    httpClient.DELETE[HttpResponse](url)
+      .andThen {
+        case Success(response) => logger.info(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} returned ${response.status}")
+        case Failure(_)        => logger.error(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} failed")
       }
+  }
 
 }

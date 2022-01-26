@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,27 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
-trait AgentClientRelationshipsWireMockSetup {
+trait AgentClientAuthorisationWireMockSetup {
 
-  val agentClientRelationshipsHost: String = "localhost"
-  val agentClientRelationshipsPort: Int = 9434
-  val wireMockAgentClientRelationshipsServer = new WireMockServer(wireMockConfig().port(agentClientRelationshipsPort))
+  val agentClientAuthorisationHost: String = "localhost"
+  val agentClientAuthorisationPort: Int = 9432
+  val wireMockAgentClientAuthorisationServer = new WireMockServer(wireMockConfig().port(agentClientAuthorisationPort))
 
   def startDeleteRelationship: StubMapping = {
-    WireMock.configureFor(agentClientRelationshipsHost, agentClientRelationshipsPort)
-    wireMockAgentClientRelationshipsServer.start()
+    WireMock.configureFor(agentClientAuthorisationHost, agentClientAuthorisationPort)
+    wireMockAgentClientAuthorisationServer.start()
 
     stubFor(
-      delete(urlEqualTo("/agent/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
-        .willReturn(aResponse().withStatus(204))
+      put(urlEqualTo("/agent-client-authorisation/invitations/set-relationship-ended"))
+        .withRequestBody(equalToJson(
+          """
+            |{
+            |    "arn": "ZARN1234567",
+            |    "clientId": "123456789",
+            |    "service": "HMRC-MTD-VAT"
+            |}
+            |""".stripMargin))
+        .willReturn(aResponse().withStatus(200))
     )
   }
 
