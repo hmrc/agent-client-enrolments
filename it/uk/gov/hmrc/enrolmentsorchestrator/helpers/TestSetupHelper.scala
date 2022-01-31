@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ trait TestSetupHelper extends AnyWordSpec
   with ServiceSpec
   with EnrolmentStoreWireMockSetup
   with AgentStatusChangeWireMockSetup
-  with AgentClientRelationshipsWireMockSetup {
+  with AgentClientAuthorisationWireMockSetup {
 
   val es9DeleteBaseUrl = "/enrolments-orchestrator/agents"
   val testARN = "AARN123"

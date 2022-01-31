@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package uk.gov.hmrc.enrolmentsorchestrator.services
 
 import play.api.Logging
 import play.api.libs.json.Json
+import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.enrolmentsorchestrator.connectors._
 import uk.gov.hmrc.enrolmentsorchestrator.models.PrincipalGroupIds
 import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds._
@@ -30,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EnrolmentsStoreService @Inject() (
     enrolmentsStoreConnector:          EnrolmentsStoreConnector,
     taxEnrolmentConnector:             TaxEnrolmentConnector,
-    agentClientRelationshipsConnector: AgentClientRelationshipsConnector
+    agentClientAuthorisationConnector: AgentClientAuthorisationConnector
 )(implicit ec: ExecutionContext) extends Logging {
 
   def terminationByEnrolmentKey(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -66,14 +67,14 @@ class EnrolmentsStoreService @Inject() (
     val enrolmentKey = s"$service~$clientIdType~$clientId"
 
     (for {
-      _ <- agentClientRelationshipsConnector.deleteRelationship(arn, service, clientIdType, clientId)
+      _ <- agentClientAuthorisationConnector.deleteRelationship(arn, service, clientIdType, clientId)
       groupIds <- enrolmentsStoreConnector.es1GetDelegatedGroups(enrolmentKey)
       _ = groupIds.delegatedGroupIds.map(groupId =>
         enrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(groupId, enrolmentKey))
     } yield ())
       .recover {
-        case e =>
-          logger.error(s"Delete insolvent traders failed for enrolmentKey: $enrolmentKey the response is ${e.getMessage}")
+        case _ =>
+          logger.error(s"Delete insolvent traders failed for enrolmentKey: ${hashString(enrolmentKey)}")
       }
 
     Future.successful(())

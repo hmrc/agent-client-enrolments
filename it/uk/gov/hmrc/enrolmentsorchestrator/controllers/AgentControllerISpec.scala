@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
+import org.scalatest.concurrent.Eventually
 import play.api.Logger
+import uk.gov.hmrc.enrolmentsorchestrator.connectors.{AgentClientAuthorisationConnector, EnrolmentsStoreConnector}
 import uk.gov.hmrc.enrolmentsorchestrator.helpers.{LogCapturing, TestSetupHelper}
 import uk.gov.hmrc.enrolmentsorchestrator.services.EnrolmentsStoreService
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter
 
-class AgentControllerISpec extends TestSetupHelper with LogCapturing {
+class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventually {
 
   override def afterEach {
     wireMockEnrolmentStoreServer.resetAll()
     wireMockAgentStatusChangeServer.resetAll()
-    wireMockAgentClientRelationshipsServer.resetAll()
+    wireMockAgentClientAuthorisationServer.resetAll()
     super.afterEach()
   }
 
@@ -120,36 +122,39 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing {
 
   }
 
-  // DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId
   "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
     "return 200" in {
-      startDeleteRelationship
-      startDeleteEnrolmentsForGroup
-
-      withClient { wsClient =>
-        withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
-          await(
-            wsClient.url(resource("/enrolments-orchestrator/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
-              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
-              .delete()
-          ).status shouldBe 200
-        }
-      }
+      testEndpointToRemoveInsolventTraders("enrolments-orchestrator")
     }
   }
 
   "DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
     "return 200" in {
-      startDeleteRelationship
-      startDeleteEnrolmentsForGroup
+      testEndpointToRemoveInsolventTraders("agent-client-enrolments")
+    }
+  }
 
-      withClient { wsClient =>
-        withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
-          await(
-            wsClient.url(resource("/agent-client-enrolments/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
-              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
-              .delete()
-          ).status shouldBe 200
+  private def testEndpointToRemoveInsolventTraders(endpointService: String) = {
+    startDeleteRelationship
+    startDeleteEnrolmentsForGroup
+
+    val logger1 = Logger(classOf[EnrolmentsStoreConnector])
+    val logger2 = Logger(classOf[AgentClientAuthorisationConnector])
+    withClient { wsClient =>
+      withCaptureOfLoggingFrom(logger1, logger2) { logEvents =>
+        await(
+          wsClient.url(resource(s"/$endpointService/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
+            .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+            .delete()
+        ).status shouldBe 200
+
+        eventually {
+          logEvents.length shouldBe 3
+          logEvents.map(_.getMessage) shouldBe List(
+            "[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ***567, clientId ***789, service HMRC-MTD-VAT returned 200",
+            "[GG-5898] GET /enrolments/***789/groups returned 200",
+            "[GG-5898] DELETE /groups/:groupId/enrolments/***789 returned 204"
+          )
         }
       }
     }
