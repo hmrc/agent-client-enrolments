@@ -29,15 +29,24 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: ExecutionContext) extends Logging with BackendHeaderCarrierProvider {
+
+  val auditSource = "agent-client-enrolments"
+  final object AuditType {
+    val agentDeleteRequest = "AgentDeleteRequest"
+    val agentDeleteResponse = "AgentDeleteResponse"
+    val agentClientDeleteRequest = "AgentClientDeleteRequest"
+    val agentClientDeleteResponse = "AgentClientDeleteResponse"
+  }
+
   def auditDeleteRequest(agentReferenceNumber: String, terminationDate: Long)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "agent-client-enrolments",
-      "AgentDeleteRequest",
+      auditSource,
+      AuditType.agentDeleteRequest,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
         "terminationDate" -> terminationDate
       ),
-      tags   = hc.toAuditTags("HMRC Gateway - Enrolments Orchestrator - Agent Delete Request", request.path)
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Request", request.path)
     )
 
     audit(event)
@@ -45,15 +54,15 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
 
   def auditSuccessfulAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "agent-client-enrolments",
-      "AgentDeleteResponse",
+      auditSource,
+      AuditType.agentDeleteResponse,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
         "terminationDate" -> terminationDate,
         "statusCode" -> statusCode,
         "success" -> true
       ),
-      tags   = hc.toAuditTags("HMRC Gateway - Enrolments Orchestrator - Agent Delete Response", request.path)
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
     )
 
     audit(event)
@@ -61,8 +70,8 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
 
   def auditFailedAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
-      "agent-client-enrolments",
-      "AgentDeleteResponse",
+      auditSource,
+      AuditType.agentDeleteResponse,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
         "terminationDate" -> terminationDate,
@@ -70,7 +79,59 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
         "failureReason" -> failureReason,
         "success" -> false
       ),
-      tags   = hc.toAuditTags("HMRC Gateway - Enrolments Orchestrator - Agent Delete Response", request.path)
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
+    )
+
+    audit(event)
+  }
+
+  def auditClientDeleteRequest(arn: String, service: String, clientIdType: String, clientId: String)(implicit request: Request[_]): Unit = {
+    val event = ExtendedDataEvent(
+      auditSource,
+      AuditType.agentClientDeleteRequest,
+      detail = Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId
+      ),
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent", request.path)
+    )
+
+    audit(event)
+  }
+
+  def auditSuccessfulClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String)(implicit request: Request[_]): Unit = {
+    val event = ExtendedDataEvent(
+      auditSource,
+      AuditType.agentClientDeleteResponse,
+      detail = Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "success" -> true,
+        "responseCode" -> 200
+      ),
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent", request.path)
+    )
+
+    audit(event)
+  }
+  def auditFailedClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
+    val event = ExtendedDataEvent(
+      auditSource,
+      AuditType.agentClientDeleteResponse,
+      detail = Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "success" -> true,
+        "responseCode" -> statusCode,
+        "failureReason" -> s"$failureReason"
+      ),
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent", request.path)
     )
 
     audit(event)

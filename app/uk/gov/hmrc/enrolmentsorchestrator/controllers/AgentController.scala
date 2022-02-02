@@ -38,7 +38,7 @@ class AgentController @Inject() (
     cc:                         ControllerComponents
 )(implicit executionContext: ExecutionContext) extends BackendController(cc) {
 
-  //more details about this end point: https://confluence.tools.tax.service.gov.uk/display/TM/SI+-+Enrolment+Orchestrator
+  //more details about this end point: https://confluence.tools.tax.service.gov.uk/display/CIP/SI+-+Agent+Client+Enrolments
   def deleteByARN(arn: String, terminationDate: Option[Long]): Action[AnyContent] = Action.async { implicit request =>
     val tDate = terminationDate.getOrElse(DateTime.now.getMillis)
     val enrolmentKey = s"HMRC-AS-AGENT~AgentReferenceNumber~$arn"
@@ -100,17 +100,22 @@ class AgentController @Inject() (
   }
 
   def deleteInsolventTraders(arn: String, service: String, clientIdType: String, clientId: String): Action[AnyContent] = Action.async { implicit request =>
+    auditService.auditClientDeleteRequest(arn, service, clientIdType, clientId)
     validateBasicAuth(request.headers, appConfig.expectedAuth)
-      .fold(
+      .fold {
+        auditService.auditFailedClientDeleteResponse(arn, service, clientIdType, clientId, 401, "BasicAuthentication failed")
         Future.successful(Unauthorized)
-      )(basicAuth => (for {
-          bearerToken <- authService.createBearerToken(basicAuth)
-          newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
-          _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(newHeaderCarrier)
-        } yield Ok)
-          .recover {
-            case _ => InternalServerError
-          }
-        )
+      }(basicAuth => (for {
+        bearerToken <- authService.createBearerToken(basicAuth)
+        newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
+        _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(newHeaderCarrier)
+        _ = auditService.auditSuccessfulClientDeleteResponse(arn, service, clientIdType, clientId)
+      } yield Ok)
+        .recover {
+          case _ =>
+            auditService.auditFailedClientDeleteResponse(arn, service, clientIdType, clientId, 500, "Internal Server Error")
+            InternalServerError
+        }
+      )
   }
 }
