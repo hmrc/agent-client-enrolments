@@ -22,7 +22,7 @@ coverageExcludedPackages :=
     |.*BuildInfo.*;
     |.*Routes.*;
     |.*RoutesPrefix.*;""".stripMargin
-coverageMinimum := 80
+coverageMinimumStmtTotal := 80
 coverageFailOnMinimum := true
 coverageHighlighting := true
 parallelExecution in Test := false
@@ -35,7 +35,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion                     := 0,
     libraryDependencies              ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(scalaVersion := "2.12.12")
+  .settings(scalaVersion := "2.12.15")
   .settings(publishingSettings: _*)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)

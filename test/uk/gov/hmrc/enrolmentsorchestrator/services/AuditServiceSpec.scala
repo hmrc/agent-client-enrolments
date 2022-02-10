@@ -56,7 +56,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
         HeaderNames.xRequestId -> requestId,
         HeaderNames.deviceID -> deviceId,
         "clientPort" -> clientPort,
-        "transactionName" -> "HMRC Gateway - Enrolments Orchestrator - Agent Delete Request"
+        "transactionName" -> "Agent Client Enrolments - Agent Delete Request"
       )
     }
 
@@ -88,7 +88,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
         HeaderNames.xRequestId -> requestId,
         HeaderNames.deviceID -> deviceId,
         "clientPort" -> clientPort,
-        "transactionName" -> "HMRC Gateway - Enrolments Orchestrator - Agent Delete Response"
+        "transactionName" -> "Agent Client Enrolments - Agent Delete Response"
       )
     }
 
@@ -121,9 +121,118 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
         HeaderNames.xRequestId -> requestId,
         HeaderNames.deviceID -> deviceId,
         "clientPort" -> clientPort,
-        "transactionName" -> "HMRC Gateway - Enrolments Orchestrator - Agent Delete Response"
+        "transactionName" -> "Agent Client Enrolments - Agent Delete Response"
       )
     }
+
+    "send the correct audit event for an agent client relationship delete request" in new Setup {
+      val captor = ArgCaptor[ExtendedDataEvent]
+      val arn = "agent ref no"
+      val service = "service"
+      val clientIdType = "clientIdType"
+      val clientId = "clientId"
+
+      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+
+      auditService.auditClientDeleteRequest(arn, service, clientIdType, clientId)(requestWithHeaders)
+
+      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
+      val event = captor.value
+
+      event.auditSource shouldBe "agent-client-enrolments"
+      event.auditType shouldBe "AgentClientDeleteRequest"
+      event.detail shouldBe Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId
+      )
+      event.tags shouldBe Map(
+        "clientIP" -> clientIp,
+        "path" -> requestWithHeaders.path,
+        HeaderNames.xSessionId -> sessionId,
+        HeaderNames.akamaiReputation -> clientReputation,
+        HeaderNames.xRequestId -> requestId,
+        HeaderNames.deviceID -> deviceId,
+        "clientPort" -> clientPort,
+        "transactionName" -> "Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent"
+      )
+    }
+
+    "send the correct audit event for a successful agent client relationship delete response" in new Setup {
+      val captor = ArgCaptor[ExtendedDataEvent]
+      val arn = "agent ref no"
+      val service = "service"
+      val clientIdType = "clientIdType"
+      val clientId = "clientId"
+
+      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+
+      auditService.auditSuccessfulClientDeleteResponse(arn, service, clientIdType, clientId)(requestWithHeaders)
+
+      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
+      val event = captor.value
+
+      event.auditSource shouldBe "agent-client-enrolments"
+      event.auditType shouldBe "AgentClientDeleteResponse"
+      event.detail shouldBe Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "success" -> true,
+        "responseCode" -> 200
+      )
+      event.tags shouldBe Map(
+        "clientIP" -> clientIp,
+        "path" -> requestWithHeaders.path,
+        HeaderNames.xSessionId -> sessionId,
+        HeaderNames.akamaiReputation -> clientReputation,
+        HeaderNames.xRequestId -> requestId,
+        HeaderNames.deviceID -> deviceId,
+        "clientPort" -> clientPort,
+        "transactionName" -> "Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent"
+      )
+    }
+
+    "send the correct audit event for a failed agent client relationship delete response" in new Setup {
+      val captor = ArgCaptor[ExtendedDataEvent]
+      val arn = "agent ref no"
+      val service = "service"
+      val clientIdType = "clientIdType"
+      val clientId = "clientId"
+      val failureReason = "error"
+
+      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+
+      auditService.auditFailedClientDeleteResponse(arn, service, clientIdType, clientId, 500, failureReason)(requestWithHeaders)
+
+      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
+      val event = captor.value
+
+      event.auditSource shouldBe "agent-client-enrolments"
+      event.auditType shouldBe "AgentClientDeleteResponse"
+      event.detail shouldBe Json.obj(
+        "agentReferenceNumber" -> arn,
+        "service" -> service,
+        "clientIdType" -> clientIdType,
+        "clientId" -> clientId,
+        "success" -> true,
+        "responseCode" -> 500,
+        "failureReason" -> failureReason
+      )
+      event.tags shouldBe Map(
+        "clientIP" -> clientIp,
+        "path" -> requestWithHeaders.path,
+        HeaderNames.xSessionId -> sessionId,
+        HeaderNames.akamaiReputation -> clientReputation,
+        HeaderNames.xRequestId -> requestId,
+        HeaderNames.deviceID -> deviceId,
+        "clientPort" -> clientPort,
+        "transactionName" -> "Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent"
+      )
+    }
+
   }
 
   trait Setup {
