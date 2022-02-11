@@ -47,3 +47,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(serviceManagerSettings: _*)
   .settings(itDependenciesList := externalServices)
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(
+    publishArtifact in (Compile, packageDoc) := false,
+    sources in (Compile, doc) := Seq.empty
+  )
