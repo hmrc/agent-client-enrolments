@@ -100,20 +100,19 @@ class AgentController @Inject() (
   }
 
   def deleteInsolventTraders(arn: String, service: String, clientIdType: String, clientId: String): Action[AnyContent] = Action.async { implicit request =>
-    auditService.auditClientDeleteRequest(arn, service, clientIdType, clientId)
     validateBasicAuth(request.headers, appConfig.expectedAuth)
       .fold {
-        auditService.auditFailedClientDeleteResponse(arn, service, clientIdType, clientId, 401, "BasicAuthentication failed")
+        auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, false, 401, "Unauthorised - the provided bearer token is either expired or not valid")
         Future.successful(Unauthorized)
       }(basicAuth => (for {
         bearerToken <- authService.createBearerToken(basicAuth)
         newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
         _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(newHeaderCarrier)
-        _ = auditService.auditSuccessfulClientDeleteResponse(arn, service, clientIdType, clientId)
+        _ = auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, true, 200, "OK Request received and the attempt at deletion will be processed")
       } yield Ok)
         .recover {
           case _ =>
-            auditService.auditFailedClientDeleteResponse(arn, service, clientIdType, clientId, 500, "Internal Server Error")
+            auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, false, 500, "Internal Server Error")
             InternalServerError
         }
       )

@@ -85,23 +85,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
     audit(event)
   }
 
-  def auditClientDeleteRequest(arn: String, service: String, clientIdType: String, clientId: String)(implicit request: Request[_]): Unit = {
-    val event = ExtendedDataEvent(
-      auditSource,
-      AuditType.agentClientDeleteRequest,
-      detail = Json.obj(
-        "agentReferenceNumber" -> arn,
-        "service" -> service,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId
-      ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent", request.path)
-    )
-
-    audit(event)
-  }
-
-  def auditSuccessfulClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String)(implicit request: Request[_]): Unit = {
+  def auditClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String, success: Boolean, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
       AuditType.agentClientDeleteResponse,
@@ -110,28 +94,11 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
         "service" -> service,
         "clientIdType" -> clientIdType,
         "clientId" -> clientId,
-        "success" -> true,
-        "responseCode" -> 200
-      ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent", request.path)
-    )
-
-    audit(event)
-  }
-  def auditFailedClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
-    val event = ExtendedDataEvent(
-      auditSource,
-      AuditType.agentClientDeleteResponse,
-      detail = Json.obj(
-        "agentReferenceNumber" -> arn,
-        "service" -> service,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "success" -> true,
+        "success" -> success,
         "responseCode" -> statusCode,
         "failureReason" -> s"$failureReason"
       ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Response; example: insolvent trader needs decoupling from an Agent", request.path)
+      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent", request.path)
     )
 
     audit(event)

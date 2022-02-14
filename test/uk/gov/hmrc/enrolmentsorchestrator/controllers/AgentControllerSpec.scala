@@ -157,8 +157,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.successful(()))
       when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
-      doNothing.when(mockAuditService).auditClientDeleteRequest(any, any, any, any)(any)
-      doNothing.when(mockAuditService).auditSuccessfulClientDeleteResponse(any, any, any, any)(any)
+      doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
       val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
       status(result) shouldBe OK
@@ -166,8 +165,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
 
     "return 401 when invalid basic auth" in new Setup {
       when(mockAuthService.getBasicAuth(any)).thenReturn(None)
-      doNothing.when(mockAuditService).auditClientDeleteRequest(any, any, any, any)(any)
-      doNothing.when(mockAuditService).auditFailedClientDeleteResponse(any, any, any, any, any, any)(any)
+      doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
       val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
       status(result) shouldBe UNAUTHORIZED
@@ -178,8 +176,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(any))
         .thenReturn(Future.failed(new Throwable))
-      doNothing.when(mockAuditService).auditClientDeleteRequest(any, any, any, any)(any)
-      doNothing.when(mockAuditService).auditFailedClientDeleteResponse(any, any, any, any, any, any)(any)
+      doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
       val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
       status(result) shouldBe INTERNAL_SERVER_ERROR
