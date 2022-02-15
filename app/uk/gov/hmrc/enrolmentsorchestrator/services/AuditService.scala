@@ -35,7 +35,6 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
     val agentDeleteRequest = "AgentDeleteRequest"
     val agentDeleteResponse = "AgentDeleteResponse"
     val agentClientDeleteRequest = "AgentClientDeleteRequest"
-    val agentClientDeleteResponse = "AgentClientDeleteResponse"
   }
 
   def auditDeleteRequest(agentReferenceNumber: String, terminationDate: Long)(implicit request: Request[_]): Unit = {
@@ -88,7 +87,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
   def auditClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String, success: Boolean, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
-      AuditType.agentClientDeleteResponse,
+      AuditType.agentClientDeleteRequest,
       detail = Json.obj(
         "agentReferenceNumber" -> arn,
         "service" -> service,
