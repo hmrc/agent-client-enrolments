@@ -45,7 +45,7 @@
 
     <logger name="com.google.inject" level="INFO"/>
 
-    <logger name="application" level="INFO"/>
+    <logger level="INFO"/>
 
     <logger name="connector" level="WARN">
         <appender-ref ref="STDOUT"/>
