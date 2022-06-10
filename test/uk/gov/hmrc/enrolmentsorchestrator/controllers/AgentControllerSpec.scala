@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
-import org.joda.time.DateTime
 import org.mockito.scalatest.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Helpers._
@@ -28,6 +27,7 @@ import uk.gov.hmrc.enrolmentsorchestrator.models.BasicAuthentication
 import uk.gov.hmrc.enrolmentsorchestrator.services.{AuditService, AuthService, EnrolmentsStoreService}
 import uk.gov.hmrc.http.{Authorization, HttpResponse, UpstreamErrorResponse}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -185,7 +185,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
 
   trait Setup {
     val testARN = "AARN123"
-    val testTerminationDate: Long = DateTime.now.toInstant.getMillis
+    val testTerminationDate: Long = Instant.now().toEpochMilli()
     val basicAuthHeader = BasicAuthentication("AgentTermDESUser", "password")
 
     val appConfig = app.injector.instanceOf[AppConfig]
