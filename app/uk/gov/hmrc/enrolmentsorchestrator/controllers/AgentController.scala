@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
-import org.joda.time.DateTime
 import play.api.mvc._
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.AgentStatusChangeConnector
@@ -25,6 +24,7 @@ import uk.gov.hmrc.enrolmentsorchestrator.services.{AuditService, AuthService, E
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +40,7 @@ class AgentController @Inject() (
 
   //more details about this end point: https://confluence.tools.tax.service.gov.uk/display/CIP/SI+-+Agent+Client+Enrolments
   def deleteByARN(arn: String, terminationDate: Option[Long]): Action[AnyContent] = Action.async { implicit request =>
-    val tDate = terminationDate.getOrElse(DateTime.now.getMillis)
+    val tDate = terminationDate.getOrElse(Instant.now.toEpochMilli())
     val enrolmentKey = s"HMRC-AS-AGENT~AgentReferenceNumber~$arn"
 
     auditService.auditDeleteRequest(arn, tDate)
