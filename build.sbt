@@ -15,7 +15,7 @@ coverageExcludedPackages :=
 coverageMinimumStmtTotal := 80
 coverageFailOnMinimum := true
 coverageHighlighting := true
-parallelExecution in Test := false
+Test / parallelExecution := false
 
 
 lazy val microservice = Project(appName, file("."))
@@ -25,7 +25,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
-  .settings(scalaVersion := "2.12.15")
+  .settings(scalaVersion := "2.13.8")
   .settings(publishingSettings: _*)
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
