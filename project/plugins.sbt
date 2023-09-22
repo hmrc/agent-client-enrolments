@@ -7,8 +7,6 @@ addSbtPlugin("uk.gov.hmrc"        % "sbt-auto-build"      % "3.8.0")
 
 addSbtPlugin("uk.gov.hmrc"        % "sbt-distributables"  % "2.1.0")
 
-addSbtPlugin("uk.gov.hmrc"        % "sbt-service-manager" % "0.11.0")
-
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
 
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,28 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.helpers
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.WsTestClient
-import uk.gov.hmrc.integration.ServiceSpec
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import UrlHelper.-/
 
 trait TestSetupHelper extends AnyWordSpec
   with Matchers
   with WsTestClient
   with BeforeAndAfterEach
-  with ServiceSpec
+  with SuiteMixin
+  with BeforeAndAfterAll
+  with ScalaFutures
+  with IntegrationPatience
+  with GuiceOneServerPerSuite
   with EnrolmentStoreWireMockSetup
   with AgentStatusChangeWireMockSetup
   with AgentClientAuthorisationWireMockSetup {
@@ -45,5 +51,12 @@ trait TestSetupHelper extends AnyWordSpec
 
   def basicAuth(string: String): String = Base64.getEncoder.encodeToString(string.getBytes(UTF_8))
 
-  override def externalServices: Seq[String] = Seq.empty
+  def resource(path: String): String =
+    s"http://localhost:$port/${-/(path)}"
+
+}
+
+object UrlHelper {
+  def -/(uri: String) =
+    if (uri.startsWith("/")) uri.drop(1) else uri
 }
