@@ -48,4 +48,4 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 
 ### To Run Locally
 
-`sm2 --start AGENT_CLIENT_ENROLMENTS_IT` 
+`sm2 --start AGENT_CLIENT_ENROLMENTS_IT`
