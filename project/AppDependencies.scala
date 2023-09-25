@@ -15,7 +15,6 @@ object AppDependencies {
     "org.pegdown"             %   "pegdown"                    % "1.6.0"               % "test, it",
     "com.vladsch.flexmark"    % "flexmark-all"                 % "0.36.8"              % "test, it",
     "com.github.tomakehurst"  %   "wiremock-jre8"              % "2.32.0"              % "test, it",
-    "uk.gov.hmrc"             %%  "service-integration-test"   % "1.3.0-play-28"       % "test, it",
     "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.13.1"              % "test, it"
   )
 
