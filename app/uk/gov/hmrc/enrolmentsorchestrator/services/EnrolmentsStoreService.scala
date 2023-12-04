@@ -17,6 +17,7 @@
 package uk.gov.hmrc.enrolmentsorchestrator.services
 
 import play.api.Logging
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.enrolmentsorchestrator.connectors._
@@ -26,7 +27,6 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 @Singleton()
@@ -45,14 +45,11 @@ class EnrolmentsStoreService @Inject() (
           taxEnrolmentConnector
             .es9DeallocateGroup(groupId, enrolmentKey)
             .map { teResponse =>
-              teResponse.status match {
-                case 204 =>
-                case _ =>
-                  logger.warn(
-                    s"For enrolmentKey: $enrolmentKey and groupId: $groupId 204 was not returned by Tax-Enrolments, " +
-                      s"the response is ${teResponse.status} with body ${teResponse.body}"
-                  )
-              }
+              if (teResponse.status != NO_CONTENT)
+                logger.warn(
+                  s"For enrolmentKey: $enrolmentKey and groupId: $groupId $NO_CONTENT was not returned by Tax-Enrolments, " +
+                    s"the response is ${teResponse.status} with body ${teResponse.body}"
+                )
               teResponse
             }
             .recover {
