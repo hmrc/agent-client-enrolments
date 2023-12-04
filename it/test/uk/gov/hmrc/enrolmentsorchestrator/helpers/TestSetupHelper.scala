@@ -29,18 +29,19 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import UrlHelper.-/
 
-trait TestSetupHelper extends AnyWordSpec
-  with Matchers
-  with WsTestClient
-  with BeforeAndAfterEach
-  with SuiteMixin
-  with BeforeAndAfterAll
-  with ScalaFutures
-  with IntegrationPatience
-  with GuiceOneServerPerSuite
-  with EnrolmentStoreWireMockSetup
-  with AgentStatusChangeWireMockSetup
-  with AgentClientAuthorisationWireMockSetup {
+trait TestSetupHelper
+    extends AnyWordSpec
+    with Matchers
+    with WsTestClient
+    with BeforeAndAfterEach
+    with SuiteMixin
+    with BeforeAndAfterAll
+    with ScalaFutures
+    with IntegrationPatience
+    with GuiceOneServerPerSuite
+    with EnrolmentStoreWireMockSetup
+    with AgentStatusChangeWireMockSetup
+    with AgentClientAuthorisationWireMockSetup {
 
   val es9DeleteBaseUrl = "/enrolments-orchestrator/agents"
   val testARN = "AARN123"

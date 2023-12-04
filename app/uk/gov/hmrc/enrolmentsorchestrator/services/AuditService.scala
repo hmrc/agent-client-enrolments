@@ -43,9 +43,9 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
       AuditType.agentDeleteRequest,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
-        "terminationDate" -> terminationDate
+        "terminationDate"      -> terminationDate
       ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Request", request.path)
+      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Request", request.path)
     )
 
     audit(event)
@@ -57,56 +57,67 @@ class AuditService @Inject() (auditConnector: AuditConnector)(implicit ec: Execu
       AuditType.agentDeleteResponse,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
-        "terminationDate" -> terminationDate,
-        "statusCode" -> statusCode,
-        "success" -> true
+        "terminationDate"      -> terminationDate,
+        "statusCode"           -> statusCode,
+        "success"              -> true
       ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
+      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
     )
 
     audit(event)
   }
 
-  def auditFailedAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
+  def auditFailedAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int, failureReason: String)(implicit
+    request: Request[_]
+  ): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
       AuditType.agentDeleteResponse,
       detail = Json.obj(
         "agentReferenceNumber" -> agentReferenceNumber,
-        "terminationDate" -> terminationDate,
-        "statusCode" -> statusCode,
-        "failureReason" -> failureReason,
-        "success" -> false
+        "terminationDate"      -> terminationDate,
+        "statusCode"           -> statusCode,
+        "failureReason"        -> failureReason,
+        "success"              -> false
       ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
+      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
     )
 
     audit(event)
   }
 
-  def auditClientDeleteResponse(arn: String, service: String, clientIdType: String, clientId: String, success: Boolean, statusCode: Int, failureReason: String)(implicit request: Request[_]): Unit = {
+  def auditClientDeleteResponse(arn: String,
+                                service: String,
+                                clientIdType: String,
+                                clientId: String,
+                                success: Boolean,
+                                statusCode: Int,
+                                failureReason: String
+                               )(implicit request: Request[_]): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
       AuditType.agentClientDeleteRequest,
       detail = Json.obj(
         "agentReferenceNumber" -> arn,
-        "service" -> service,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "success" -> success,
-        "responseCode" -> statusCode,
-        "failureReason" -> s"$failureReason"
+        "service"              -> service,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "success"              -> success,
+        "responseCode"         -> statusCode,
+        "failureReason"        -> s"$failureReason"
       ),
-      tags   = hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent", request.path)
+      tags =
+        hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent",
+                       request.path
+                      )
     )
 
     audit(event)
   }
 
   private def audit(event: ExtendedDataEvent): Future[Unit] = {
-    auditConnector.sendExtendedEvent(event).map(_ => ()).recover {
-      case t =>
-        logger.error(s"Failed sending audit message", t)
+    auditConnector.sendExtendedEvent(event).map(_ => ()).recover { case t =>
+      logger.error(s"Failed sending audit message", t)
     }
   }
 

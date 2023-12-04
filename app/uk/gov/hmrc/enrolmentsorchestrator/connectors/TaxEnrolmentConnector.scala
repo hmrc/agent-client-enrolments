@@ -28,7 +28,7 @@ class TaxEnrolmentConnector @Inject() (httpClient: HttpClient, appConfig: AppCon
 
   lazy val taxEnrolmentsBaseUrl: String = appConfig.taxEnrolmentsBaseUrl
 
-  //Use tax-enrolments service to call es9 to deallocate the group and clear the auth session
+  // Use tax-enrolments service to call es9 to deallocate the group and clear the auth session
   def es9DeallocateGroup(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[HttpResponse] = {
     val url = s"$taxEnrolmentsBaseUrl/tax-enrolments/groups/$groupId/enrolments/$enrolmentKey"
     httpClient.DELETE(url)

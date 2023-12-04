@@ -24,9 +24,10 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DataCorrectionService @Inject() (
-    enrolmentStore: EnrolmentsStoreConnector,
-    configuration:  Configuration
-)(implicit ec: ExecutionContext) extends Logging {
+  enrolmentStore: EnrolmentsStoreConnector,
+  configuration: Configuration
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private val config = configuration.get[Configuration]("oneOffDataCorrection")
   private val enabled = config.get[Boolean]("enabled")
@@ -38,18 +39,23 @@ class DataCorrectionService @Inject() (
     logger.info("[GG-5119] data correction task disabled")
   }
 
-  private def applyCorrections(): Future[Unit] = Future.sequence {
-    corrections.map { correction =>
-      val credId = correction.get[String]("credId")
-      val enrolmentKey = correction.get[String]("enrolmentKey")
+  private def applyCorrections(): Future[Unit] = Future
+    .sequence {
+      corrections.map { correction =>
+        val credId = correction.get[String]("credId")
+        val enrolmentKey = correction.get[String]("enrolmentKey")
 
-      logger.info(s"[GG-5119] Applying enrolment $enrolmentKey to cred $credId")
-      enrolmentStore.assignEnrolment(credId, enrolmentKey)(HeaderCarrier()).map { _ =>
-        logger.info(s"[GG-5119] Successfully applied enrolment $enrolmentKey to cred $credId")
-      }.recover {
-        case e => logger.error(s"[GG-5119] Failed to apply enrolment $enrolmentKey to cred $credId", e)
+        logger.info(s"[GG-5119] Applying enrolment $enrolmentKey to cred $credId")
+        enrolmentStore
+          .assignEnrolment(credId, enrolmentKey)(HeaderCarrier())
+          .map { _ =>
+            logger.info(s"[GG-5119] Successfully applied enrolment $enrolmentKey to cred $credId")
+          }
+          .recover { case e =>
+            logger.error(s"[GG-5119] Failed to apply enrolment $enrolmentKey to cred $credId", e)
+          }
       }
     }
-  }.map(_ => ())
+    .map(_ => ())
 
 }

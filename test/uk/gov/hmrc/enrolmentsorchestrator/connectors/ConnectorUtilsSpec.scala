@@ -24,8 +24,8 @@ class ConnectorUtilsSpec extends UnitSpec {
   "hashString" should {
     "only show last 3 letters" in {
       hashString("123456") shouldBe "***456"
-      hashString("123") shouldBe "***"
-      hashString("12") shouldBe "***"
+      hashString("123")    shouldBe "***"
+      hashString("12")     shouldBe "***"
     }
   }
 

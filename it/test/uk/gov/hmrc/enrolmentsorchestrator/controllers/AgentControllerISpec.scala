@@ -44,11 +44,12 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
         withClient { wsClient =>
           withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
             await(
-              wsClient.url(resource(s"$es9DeleteBaseUrl/$testARN"))
+              wsClient
+                .url(resource(s"$es9DeleteBaseUrl/$testARN"))
                 .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
                 .delete()
-            ).status shouldBe 200
-            logEvents.length shouldBe 1
+            ).status                                                                               shouldBe 200
+            logEvents.length                                                                       shouldBe 1
             logEvents.head.toString.contains("DELETE /enrolments-orchestrator/agents/AARN123 200") shouldBe true
           }
         }
@@ -61,18 +62,22 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
 
         withClient { wsClient =>
           withCaptureOfLoggingFrom(Logger(classOf[EnrolmentsStoreService])) { logEvents =>
-            await(wsClient.url(resource(s"$es9DeleteBaseUrl/$testARN"))
-              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
-              .delete()).status shouldBe 200
+            await(
+              wsClient
+                .url(resource(s"$es9DeleteBaseUrl/$testARN"))
+                .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+                .delete()
+            ).status         shouldBe 200
             logEvents.length shouldBe 1
-            logEvents.head.toString.contains("For enrolmentKey: HMRC-AS-AGENT~AgentReferenceNumber~AARN123 200 was not returned by Enrolments-Store, " +
-              "ie no groupId found there are no allocated groups (the enrolment itself may or may not actually exist) " +
-              "or there is nothing to return, the response is 204 with body ") shouldBe true
+            logEvents.head.toString.contains(
+              "For enrolmentKey: HMRC-AS-AGENT~AgentReferenceNumber~AARN123 200 was not returned by Enrolments-Store, " +
+                "ie no groupId found there are no allocated groups (the enrolment itself may or may not actually exist) " +
+                "or there is nothing to return, the response is 204 with body "
+            ) shouldBe true
           }
         }
       }
     }
-
 
     "return 401" when {
 
@@ -80,9 +85,9 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
         withClient { wsClient =>
           withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
             val response = await(wsClient.url(resource(s"$es9DeleteBaseUrl/$testARN")).delete())
-            response.status shouldBe 401
-            response.body shouldBe "BasicAuthentication failed"
-            logEvents.length shouldBe 1
+            response.status                         shouldBe 401
+            response.body                           shouldBe "BasicAuthentication failed"
+            logEvents.length                        shouldBe 1
             logEvents.head.toString.contains("401") shouldBe true
           }
         }
@@ -94,27 +99,29 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
 
         withClient { wsClient =>
           withCaptureOfLoggingFrom(Logger(classOf[DefaultLoggingFilter])) { logEvents =>
-            val response = await(wsClient.url(resource(s"$es9DeleteBaseUrl/$testARN"))
-              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
-              .delete())
-            response.status shouldBe 401
-            logEvents.length shouldBe 1
+            val response = await(
+              wsClient
+                .url(resource(s"$es9DeleteBaseUrl/$testARN"))
+                .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+                .delete()
+            )
+            response.status                         shouldBe 401
+            logEvents.length                        shouldBe 1
             logEvents.head.toString.contains("401") shouldBe true
           }
         }
       }
     }
 
-
     "return 500" when {
       "An exception occurred by external services such as Connection refused" in {
-        val es9DeleteResponse = withClient {
-          wsClient =>
-            await(
-              wsClient.url(resource(s"$es9DeleteBaseUrl/$testARN"))
-                .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
-                .delete()
-            )
+        val es9DeleteResponse = withClient { wsClient =>
+          await(
+            wsClient
+              .url(resource(s"$es9DeleteBaseUrl/$testARN"))
+              .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
+              .delete()
+          )
         }
         es9DeleteResponse.status shouldBe 500
       }
@@ -143,7 +150,8 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
     withClient { wsClient =>
       withCaptureOfLoggingFrom(logger1, logger2) { logEvents =>
         await(
-          wsClient.url(resource(s"/$endpointService/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
+          wsClient
+            .url(resource(s"/$endpointService/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
             .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
             .delete()
         ).status shouldBe 200
