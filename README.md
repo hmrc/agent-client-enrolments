@@ -46,6 +46,12 @@ Responds with:
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
 
-### To Run Locally
+### To Test Locally
+
+Preconditions: the mongod service needs to be running for _it/test_
 
 `sm2 --start AGENT_CLIENT_ENROLMENTS_IT`
+
+`sbt clean coverage test it/test coverageReport`
+
+The test coverage report can be found in `$WORKSPACE/agent-client-enrolments/target/scala-2.13/scoverage-report/index.html`
