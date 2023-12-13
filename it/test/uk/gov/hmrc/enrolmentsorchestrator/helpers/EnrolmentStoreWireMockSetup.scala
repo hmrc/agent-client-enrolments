@@ -34,8 +34,11 @@ trait EnrolmentStoreWireMockSetup {
 
     stubFor(
       get(urlEqualTo("/enrolment-store-proxy/enrolment-store/enrolments/HMRC-AS-AGENT~AgentReferenceNumber~AARN123/groups?type=principal"))
-        .willReturn(aResponse().withStatus(200)
-          .withBody("""{"principalGroupIds":["90ccf333-65d2-4bf2-a008-01dfca702161"]}"""))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody("""{"principalGroupIds":["90ccf333-65d2-4bf2-a008-01dfca702161"]}""")
+        )
     )
 
     stubFor(
@@ -44,7 +47,11 @@ trait EnrolmentStoreWireMockSetup {
     )
 
     stubFor(
-      delete(urlEqualTo("/enrolment-store-proxy/enrolment-store/groups/90ccf333-65d2-4bf2-a008-01dfca702161/enrolments/HMRC-AS-AGENT~AgentReferenceNumber~AARN123"))
+      delete(
+        urlEqualTo(
+          "/enrolment-store-proxy/enrolment-store/groups/90ccf333-65d2-4bf2-a008-01dfca702161/enrolments/HMRC-AS-AGENT~AgentReferenceNumber~AARN123"
+        )
+      )
         .willReturn(aResponse().withStatus(204))
     )
   }
@@ -64,12 +71,19 @@ trait EnrolmentStoreWireMockSetup {
     wireMockEnrolmentStoreServer.start()
     stubFor(
       get(urlEqualTo("/enrolment-store-proxy/enrolment-store/enrolments/HMRC-MTD-VAT~VRN~123456789/groups?type=delegated"))
-        .willReturn(aResponse().withStatus(200)
-          .withBody("""{"delegatedGroupIds":["90ccf333-65d2-4bf2-a008-01dfca702162"]}"""))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody("""{"delegatedGroupIds":["90ccf333-65d2-4bf2-a008-01dfca702162"]}""")
+        )
     )
 
     stubFor(
-      delete(urlEqualTo("/enrolment-store-proxy/enrolment-store/groups/90ccf333-65d2-4bf2-a008-01dfca702162/enrolments/HMRC-MTD-VAT~VRN~123456789?keepAgentAllocations=false"))
+      delete(
+        urlEqualTo(
+          "/enrolment-store-proxy/enrolment-store/groups/90ccf333-65d2-4bf2-a008-01dfca702162/enrolments/HMRC-MTD-VAT~VRN~123456789?keepAgentAllocations=false"
+        )
+      )
         .willReturn(aResponse().withStatus(204))
     )
   }

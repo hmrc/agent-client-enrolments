@@ -34,8 +34,7 @@ trait AgentClientAuthorisationWireMockSetup {
 
     stubFor(
       put(urlEqualTo("/agent-client-authorisation/invitations/set-relationship-ended"))
-        .withRequestBody(equalToJson(
-          """
+        .withRequestBody(equalToJson("""
             |{
             |    "arn": "ZARN1234567",
             |    "clientId": "123456789",

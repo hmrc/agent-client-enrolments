@@ -35,7 +35,8 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
 
   val mockAgentClientAuthorisationConnector: AgentClientAuthorisationConnector = mock[AgentClientAuthorisationConnector]
 
-  val enrolmentsStoreService = new EnrolmentsStoreService(mockEnrolmentsStoreConnector, mockTaxEnrolmentConnector, mockAgentClientAuthorisationConnector)
+  val enrolmentsStoreService =
+    new EnrolmentsStoreService(mockEnrolmentsStoreConnector, mockTaxEnrolmentConnector, mockAgentClientAuthorisationConnector)
 
   val enrolmentKey = "enrolmentKey"
   val groupId = "groupId"
@@ -72,11 +73,10 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         await(enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)) shouldBe testHttpResponse
 
         logEvents.length shouldBe 1
-        logEvents.collectFirst {
-          case logEvent =>
-            logEvent.getMessage shouldBe "For enrolmentKey: enrolmentKey 200 was not returned by Enrolments-Store, " +
-              "ie no groupId found there are no allocated groups (the enrolment itself may or may not actually exist) " +
-              "or there is nothing to return, the response is 204 with body "
+        logEvents.collectFirst { case logEvent =>
+          logEvent.getMessage shouldBe "For enrolmentKey: enrolmentKey 200 was not returned by Enrolments-Store, " +
+            "ie no groupId found there are no allocated groups (the enrolment itself may or may not actually exist) " +
+            "or there is nothing to return, the response is 204 with body "
         }
 
       }
@@ -96,10 +96,9 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         await(enrolmentsStoreService.terminationByEnrolmentKey(enrolmentKey)) shouldBe taxEnrolmentHttpResponse
 
         logEvents.length shouldBe 1
-        logEvents.collectFirst {
-          case logEvent =>
-            logEvent.getMessage shouldBe s"For enrolmentKey: $enrolmentKey and groupId: $groupId 204 was not returned by Tax-Enrolments, " +
-              s"the response is 400 with body "
+        logEvents.collectFirst { case logEvent =>
+          logEvent.getMessage shouldBe s"For enrolmentKey: $enrolmentKey and groupId: $groupId 204 was not returned by Tax-Enrolments, " +
+            s"the response is 400 with body "
         }
 
       }

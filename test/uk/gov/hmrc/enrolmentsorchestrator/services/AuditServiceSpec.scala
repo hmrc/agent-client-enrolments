@@ -43,20 +43,20 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val event = captor.value
 
       event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType shouldBe "AgentDeleteRequest"
+      event.auditType   shouldBe "AgentDeleteRequest"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
-        "terminationDate" -> timestamp
+        "terminationDate"      -> timestamp
       )
       event.tags shouldBe Map(
-        "clientIP" -> clientIp,
-        "path" -> requestWithHeaders.path,
-        HeaderNames.xSessionId -> sessionId,
+        "clientIP"                   -> clientIp,
+        "path"                       -> requestWithHeaders.path,
+        HeaderNames.xSessionId       -> sessionId,
         HeaderNames.akamaiReputation -> clientReputation,
-        HeaderNames.xRequestId -> requestId,
-        HeaderNames.deviceID -> deviceId,
-        "clientPort" -> clientPort,
-        "transactionName" -> "Agent Client Enrolments - Agent Delete Request"
+        HeaderNames.xRequestId       -> requestId,
+        HeaderNames.deviceID         -> deviceId,
+        "clientPort"                 -> clientPort,
+        "transactionName"            -> "Agent Client Enrolments - Agent Delete Request"
       )
     }
 
@@ -73,22 +73,22 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val event = captor.value
 
       event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType shouldBe "AgentDeleteResponse"
+      event.auditType   shouldBe "AgentDeleteResponse"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
-        "terminationDate" -> timestamp,
-        "statusCode" -> 200,
-        "success" -> true
+        "terminationDate"      -> timestamp,
+        "statusCode"           -> 200,
+        "success"              -> true
       )
       event.tags shouldBe Map(
-        "clientIP" -> clientIp,
-        "path" -> requestWithHeaders.path,
-        HeaderNames.xSessionId -> sessionId,
+        "clientIP"                   -> clientIp,
+        "path"                       -> requestWithHeaders.path,
+        HeaderNames.xSessionId       -> sessionId,
         HeaderNames.akamaiReputation -> clientReputation,
-        HeaderNames.xRequestId -> requestId,
-        HeaderNames.deviceID -> deviceId,
-        "clientPort" -> clientPort,
-        "transactionName" -> "Agent Client Enrolments - Agent Delete Response"
+        HeaderNames.xRequestId       -> requestId,
+        HeaderNames.deviceID         -> deviceId,
+        "clientPort"                 -> clientPort,
+        "transactionName"            -> "Agent Client Enrolments - Agent Delete Response"
       )
     }
 
@@ -105,23 +105,23 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val event = captor.value
 
       event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType shouldBe "AgentDeleteResponse"
+      event.auditType   shouldBe "AgentDeleteResponse"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
-        "terminationDate" -> timestamp,
-        "statusCode" -> 400,
-        "success" -> false,
-        "failureReason" -> "bad stuff happened"
+        "terminationDate"      -> timestamp,
+        "statusCode"           -> 400,
+        "success"              -> false,
+        "failureReason"        -> "bad stuff happened"
       )
       event.tags shouldBe Map(
-        "clientIP" -> clientIp,
-        "path" -> requestWithHeaders.path,
-        HeaderNames.xSessionId -> sessionId,
+        "clientIP"                   -> clientIp,
+        "path"                       -> requestWithHeaders.path,
+        HeaderNames.xSessionId       -> sessionId,
         HeaderNames.akamaiReputation -> clientReputation,
-        HeaderNames.xRequestId -> requestId,
-        HeaderNames.deviceID -> deviceId,
-        "clientPort" -> clientPort,
-        "transactionName" -> "Agent Client Enrolments - Agent Delete Response"
+        HeaderNames.xRequestId       -> requestId,
+        HeaderNames.deviceID         -> deviceId,
+        "clientPort"                 -> clientPort,
+        "transactionName"            -> "Agent Client Enrolments - Agent Delete Response"
       )
     }
 
@@ -141,24 +141,24 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val event = captor.value
 
       event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType shouldBe "AgentClientDeleteRequest"
+      event.auditType   shouldBe "AgentClientDeleteRequest"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
-        "service" -> service,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "success" -> true,
-        "responseCode" -> 200,
-        "failureReason" -> failureReason
+        "service"              -> service,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "success"              -> true,
+        "responseCode"         -> 200,
+        "failureReason"        -> failureReason
       )
       event.tags shouldBe Map(
-        "clientIP" -> clientIp,
-        "path" -> requestWithHeaders.path,
-        HeaderNames.xSessionId -> sessionId,
+        "clientIP"                   -> clientIp,
+        "path"                       -> requestWithHeaders.path,
+        HeaderNames.xSessionId       -> sessionId,
         HeaderNames.akamaiReputation -> clientReputation,
-        HeaderNames.xRequestId -> requestId,
-        HeaderNames.deviceID -> deviceId,
-        "clientPort" -> clientPort,
+        HeaderNames.xRequestId       -> requestId,
+        HeaderNames.deviceID         -> deviceId,
+        "clientPort"                 -> clientPort,
         "transactionName" -> "Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent"
       )
     }
@@ -179,24 +179,24 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val event = captor.value
 
       event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType shouldBe "AgentClientDeleteRequest"
+      event.auditType   shouldBe "AgentClientDeleteRequest"
       event.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
-        "service" -> service,
-        "clientIdType" -> clientIdType,
-        "clientId" -> clientId,
-        "success" -> false,
-        "responseCode" -> 500,
-        "failureReason" -> failureReason
+        "service"              -> service,
+        "clientIdType"         -> clientIdType,
+        "clientId"             -> clientId,
+        "success"              -> false,
+        "responseCode"         -> 500,
+        "failureReason"        -> failureReason
       )
       event.tags shouldBe Map(
-        "clientIP" -> clientIp,
-        "path" -> requestWithHeaders.path,
-        HeaderNames.xSessionId -> sessionId,
+        "clientIP"                   -> clientIp,
+        "path"                       -> requestWithHeaders.path,
+        HeaderNames.xSessionId       -> sessionId,
         HeaderNames.akamaiReputation -> clientReputation,
-        HeaderNames.xRequestId -> requestId,
-        HeaderNames.deviceID -> deviceId,
-        "clientPort" -> clientPort,
+        HeaderNames.xRequestId       -> requestId,
+        HeaderNames.deviceID         -> deviceId,
+        "clientPort"                 -> clientPort,
         "transactionName" -> "Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent"
       )
     }

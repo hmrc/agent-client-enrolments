@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.HeaderNames.AUTHORIZATION
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig

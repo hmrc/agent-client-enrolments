@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.contains
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.http.HttpResponse

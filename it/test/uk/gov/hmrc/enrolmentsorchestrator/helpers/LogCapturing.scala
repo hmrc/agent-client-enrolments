@@ -29,12 +29,13 @@ trait LogCapturing {
     val appender = new ListAppender[ILoggingEvent]()
     appender.start()
 
-    for (loggerLike <- loggerLikes){
+    for (loggerLike <- loggerLikes) {
       val logger = loggerLike.logger.asInstanceOf[Logger]
       logger.addAppender(appender)
       logger.setLevel(Level.ALL)
       logger.setAdditive(true)
     }
 
-    body(appender.list.asScala.toList)  }
+    body(appender.list.asScala.toList)
+  }
 }

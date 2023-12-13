@@ -35,7 +35,7 @@ class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: App
 
   lazy val enrolmentsStoreBaseUrl: String = appConfig.enrolmentsStoreBaseUrl
 
-  //Query Groups who have an allocated Enrolment
+  // Query Groups who have an allocated Enrolment
   def es1GetPrincipalGroups(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=principal"
     httpClient.GET[HttpResponse](url)
@@ -48,16 +48,19 @@ class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: App
 
   def es1GetDelegatedGroups(enrolmentKey: String)(implicit hc: HeaderCarrier, rds: HttpReads[DelegatedGroupIds]): Future[DelegatedGroupIds] = {
     val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=delegated"
-    httpClient.GET[HttpResponse](url)
+    httpClient
+      .GET[HttpResponse](url)
       .andThen {
         case Success(response) => logger.info(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups returned ${response.status}")
         case Failure(_)        => logger.error(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups failed")
-      }.map (rds.read(HttpVerbs.POST, url, _))
+      }
+      .map(rds.read(HttpVerbs.POST, url, _))
   }
 
   def es9DeallocateDelegatedEnrolment(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false"
-    httpClient.DELETE[HttpResponse](url)
+    httpClient
+      .DELETE[HttpResponse](url)
       .andThen {
         case Success(response) => logger.info(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} returned ${response.status}")
         case Failure(_)        => logger.error(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} failed")

@@ -6,6 +6,16 @@
 
 Agents and Traders require the capability to have their accounts and associated access suspended and terminated, the service is to fulfil this functionality.
 
+## How to build and test
+
+Preconditions: `mongod` needs to be running for `it/test`
+
+`sm2 --start AGENT_CLIENT_ENROLMENTS_IT`
+
+`sbt clean coverage test it/test coverageReport`
+
+The test coverage report can be found in `$WORKSPACE/agent-client-enrolments/target/scala-2.13/scoverage-report/index.html`
+
 ## Public API
 
 | Path                               | Description                                          |
@@ -42,10 +52,6 @@ Responds with:
 | 401  | Unauthorised - the provided bearer token is either expired or not valid |
 | 50X  | Service error |
 
-### License
+## License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
-
-### To Run Locally
-
-`sm2 --start AGENT_CLIENT_ENROLMENTS_IT`

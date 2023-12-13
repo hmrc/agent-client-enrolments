@@ -32,10 +32,17 @@ class AgentClientAuthorisationConnector @Inject() (httpClient: HttpClient, appCo
 
   def deleteRelationship(arn: String, service: String, clientIdType: String, clientId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url = s"$baseUrl/agent-client-authorisation/invitations/set-relationship-ended"
-    httpClient.PUT(url, Map("arn" -> arn, "clientId" -> clientId, "service" -> service))
+    httpClient
+      .PUT(url, Map("arn" -> arn, "clientId" -> clientId, "service" -> service))
       .andThen {
-        case Success(response) => logger.info(s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}")
-        case Failure(_)        => logger.error(s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service failed")
+        case Success(response) =>
+          logger.info(
+            s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}"
+          )
+        case Failure(_) =>
+          logger.error(
+            s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service failed"
+          )
       }
   }
 

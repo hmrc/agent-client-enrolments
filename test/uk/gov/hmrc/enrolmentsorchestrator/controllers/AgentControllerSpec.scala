@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.Mockito.{doNothing, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
@@ -49,7 +52,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditSuccessfulAgentDeleteResponse(any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe OK
     }
 
@@ -70,7 +75,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe UNAUTHORIZED
     }
 
@@ -80,7 +87,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
 
       status(result) shouldBe UNAUTHORIZED
     }
@@ -97,7 +106,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
 
       status(result) shouldBe UNAUTHORIZED
     }
@@ -117,7 +128,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
@@ -135,7 +148,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
@@ -145,7 +160,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       doNothing.when(mockAuditService).auditDeleteRequest(any, any)(any)
       doNothing.when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(any)
 
-      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
@@ -159,7 +176,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
-      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe OK
     }
 
@@ -167,7 +186,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       when(mockAuthService.getBasicAuth(any)).thenReturn(None)
       doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
-      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe UNAUTHORIZED
     }
 
@@ -178,7 +199,9 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.failed(new Throwable))
       doNothing.when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(any)
 
-      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}"))
+      val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(
+        FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
+      )
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
