@@ -1,0 +1,181 @@
+openapi: 3.0.3
+
+info:
+  title: Agent Client Enrolments
+  version: '1.0'
+  description: >-
+
+    # Overview
+    
+    Following a trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
+    
+    You can find more information about this API in the [agent-client-enrolments](https://github.com/hmrc/agent-client-enrolments/blob/main/README.md) GitHub repository.
+
+    # Changelog
+
+    You can find the changelog in the [agent-client-enrolments](https://github.com/hmrc/agent-client-enrolments/blob/main/CHANGE_LOG.md) GitHub repository.
+
+
+servers:
+  - url: https://hip.ibt.ws.hmrc.gov.uk/asa
+    description: MDTP QA
+  - url: https://hip.ws.hmrc.gov.uk/asa
+    description: MDTP Production
+
+components:
+  parameters:
+    arnParameter:
+      name: arn
+      in: path
+      description: The Making Tax Digital (MTD) platform Agent Reference Number. For format and validation of Agent Reference Number [See here](https://github.com/hmrc/agent-mtd-identifiers/blob/main/src/main/scala/uk/gov/hmrc/agentmtdidentifiers/model/Arn.scala)
+      required: true
+      style: simple
+      schema:
+        type: string
+        example: AARN9999999
+    serviceParameter:
+      name: service
+      in: path
+      description: The EACD service name on the enrolment key.
+      required: true
+      style: simple
+      schema:
+        type: string
+        enum:
+        - HMRC-MTD-IT
+        - HMRC-MTD-IT-SUPP
+        - HMRC-MTD-VAT
+    clientIdTypeParameter:
+        name: clientIdType
+        in: path
+        description: The type of the client identifier.
+        required: true
+        style: simple
+        schema:
+            type: string
+            enum:
+            - ni
+            - vrn
+    clientIdParameter:
+        name: clientId
+        in: path
+        description: The client identifier.
+        required: true
+        style: simple
+        schema:
+            type: string
+            example: 123456789
+    authHeader:
+      name: Authorization
+      in: header
+      description: Bearer [SERVER-TOKEN]
+      schema:
+        type: string
+      required: true
+      style: simple
+  securitySchemes:
+    userRestricted:
+      type: oauth2
+      description: |
+        HMRC supports OAuth 2.0 for authenticating user restricted API requests using an OAuth 2.0 Bearer Token in the AUTHORIZATION header.
+        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
+          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
+          scopes:
+            write:agent-client-relationships: Grants write access
+  responses:
+    unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorizedRequest:
+              value:
+                code: UNAUTHORIZED
+                message: Unauthorised - the provided bearer token is either expired or not valid
+    internalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            internalServerError:
+              value:
+                code: INTERNAL_SERVER_ERROR
+                message: Internal Server Error
+    forbiddenDelete:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    badRequestResponses:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+    Links:
+      title: Links
+      required:
+        - self
+      type: object
+      properties:
+        self:
+          allOf:
+            - $ref: '#/components/schemas/Self'
+      description: A link to the current resource.
+    Self:
+      title: Self
+      required:
+        - href
+      type: object
+      properties:
+        href:
+          type: string
+      description: A link to the current resource.
+paths:
+  /agent-client-enrolments/relationships/{arn}/service/{service}/client/{clientIdType}/{clientId}:
+    delete:
+      summary: Delete an authorisation
+      description: Delete an authorisation between an agent and a client
+      operationId: Deleteauthorisation
+      security:
+        - userRestricted:
+            - write:agent-client-enrolments
+      parameters:
+        - $ref: '#/components/parameters/arnParameter'
+        - $ref: '#/components/parameters/serviceParameter'
+        - $ref: '#/components/parameters/clientIdTypeParameter'
+        - $ref: '#/components/parameters/clientIdParameter'
+      responses:
+        '200':
+          description: The delete relationship request was accepted
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbiddenDelete'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+      deprecated: false
+
+tags:
+  - name: Agents
+    description: 'Enrolments orchestrator for Agent Services'
