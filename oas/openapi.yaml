@@ -7,7 +7,7 @@ info:
 
     # Overview
     
-    Following a trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
+    Following a VAT or Income Tax for Self Assessment (ITSA) trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
     
     You can find more information about this API in the [agent-client-enrolments](https://github.com/hmrc/agent-client-enrolments/blob/main/README.md) GitHub repository.
 
@@ -54,38 +54,20 @@ components:
         schema:
             type: string
             enum:
-            - ni
-            - vrn
+            - MTDITID
+            - VRN
     clientIdParameter:
         name: clientId
         in: path
-        description: The client identifier.
+        description: The client identifier (the client's VRN or MTDITID).
         required: true
         style: simple
         schema:
             type: string
-            example: 123456789
-    authHeader:
-      name: Authorization
-      in: header
-      description: Bearer [SERVER-TOKEN]
-      schema:
-        type: string
-      required: true
-      style: simple
   securitySchemes:
-    userRestricted:
-      type: oauth2
-      description: |
-        HMRC supports OAuth 2.0 for authenticating user restricted API requests using an OAuth 2.0 Bearer Token in the AUTHORIZATION header.
-        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
-      flows:
-        authorizationCode:
-          authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
-          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
-          refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
-          scopes:
-            write:agent-client-relationships: Grants write access
+    basicAuth:
+      type: http
+      scheme: basic
   responses:
     unauthorized:
       description: Unauthorized
@@ -151,6 +133,8 @@ components:
         href:
           type: string
       description: A link to the current resource.
+security:
+  - basicAuth: []
 paths:
   /agent-client-enrolments/relationships/{arn}/service/{service}/client/{clientIdType}/{clientId}:
     delete:
