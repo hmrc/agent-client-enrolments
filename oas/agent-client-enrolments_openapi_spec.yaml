@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: Agent Client Enrolments
+  description: |2-
+
+    # Overview
+    Following a VAT or Income Tax for Self Assessment (ITSA) trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
+    # Changelog
+    1.0 [2024-10-11] initial release.
+  version: "1.0"
+  x-integration-catalogue:
+    reviewed-date: 2024-10-11T15:00:00Z
+    platform: HIP
+    short-description: API that allows a trigger request for the removal of any agent-client
+      relationships in EACD/Agent Services
+    status: ALPHA
+    backends:
+    - MDTP
+    domain: 8
+    sub-domain: 8.15
+  license:
+    name: Apache 2.0 
+    url: http://www.apache.org/licenses/LICENSE-2.0    
+servers:
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/asa
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/asa
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/asa
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/asa
+  description: External - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/asa
+  description: External - QA
+security:
+- oAuth2:
+  - write:agent-client-enrolments
+tags:
+- name: Agents
+  description: Enrolments orchestrator for Agent Services
+paths:
+  /agent-client-enrolments/relationships/{arn}/service/{service}/client/{clientIdType}/{clientId}:
+    delete:
+      summary: Delete an authorisation
+      description: Delete an authorisation between an agent and a client
+      operationId: Deleteauthorisation
+      parameters:
+        - $ref: '#/components/parameters/correlationId'
+        - $ref: '#/components/parameters/arnParameter'
+        - $ref: '#/components/parameters/serviceParameter'
+        - $ref: '#/components/parameters/clientIdTypeParameter'
+        - $ref: '#/components/parameters/clientIdParameter'
+      responses:
+        "204":
+          $ref: '#/components/responses/successResponse'
+        "400":
+          $ref: '#/components/responses/badRequest'  
+        "401":
+          $ref: '#/components/responses/unauthorized'
+        "500":
+          $ref: '#/components/responses/internalServerError'
+        "503":
+          $ref: '#/components/responses/serviceUnavailable'
+      deprecated: false
+components:
+  headers:
+    CorrelationId:
+      description: A UUID format string for the transaction used for traceability purposes
+      schema:
+        type: string
+        format: uuid
+        example: f92d12cd-7087-42b9-b7ae-b32665c5dc31
+  schemas:
+    errorResponse:
+      title: Error Response Schema
+      type: object
+      additionalProperties: false
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - code
+              - reason
+            properties:
+              code:
+                description: Keys for all the errors returned
+                type: string
+                pattern: '^[A-Z0-9_-]{1,160}$'
+              reason:
+                description: A simple description for the failure
+                type: string
+                minLength: 1
+                maxLength: 160
+  responses:
+    successResponse:
+      description: Successful Response
+      headers:
+        CorrelationId:
+          $ref: '#/components/headers/CorrelationId'
+    badRequest:
+      description: >-
+        Bad request
+
+        ```
+
+        A bad request has been made; this could be due to one or more issues
+        with the request
+
+        "code"                              "reason"
+
+        INVALID_ARN                         Submission has not passed validation. Invalid parameter arn.
+
+        INVALID_SERVICENAME                 Submission has not passed validation. Invalid parameter serviceName.
+        
+        INVALID_IDTYPE                      Submission has not passed validation. Invalid parameter idType.
+        
+        INVALID_IDVALUE                     Submission has not passed validation. Invalid parameter idValue.
+
+        INVALID_CORRELATIONID               Submission has not passed validation. Invalid Header parameter CorrelationId.
+
+      headers:
+        CorrelationId:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          examples:
+            Example1_SingleCode:
+              summary: Single Error Code
+              value:
+                failures:
+                  - code: INVALID_ARN
+                    reason: >-
+                      Submission has not passed validation. Invalid parameter arn.
+            Example2_MultipleErrorCodes:
+              summary: Multiple Error Codes
+              value:
+                failures:
+                  - code: INVALID_SERVICENAME
+                    reason: >-
+                      Submission has not passed validation. Invalid parameter serviceName.
+                  - code: INVALID_CORRELATIONID
+                    reason: >-
+                      Submission has not passed validation. Invalid Header parameter CorrelationId.
+    unauthorized:
+      description: Unauthorized
+      headers:
+        CorrelationId:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          examples:
+            unauthorizedRequest:
+              value:
+                failures:
+                  - code: UNAUTHORIZED
+                    reason: Unauthorised - the provided bearer token is either expired
+                      or not valid
+    internalServerError:
+      description: Internal Server Error
+      headers:
+        CorrelationId:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          examples:
+            internalServerError:
+              value:
+                failures:
+                  - code: INTERNAL_SERVER_ERROR
+                    reason: Internal Server Error
+    serviceUnavailable:
+      description: >-
+        Service unavailable
+
+        ```
+
+        "code"                "reason"
+
+        SERVICE_UNAVAILABLE   Dependent systems are currently not responding.
+      headers:
+        CorrelationId:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/json;charset=UTF-8:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          examples:
+            Example-ServerUnavailable:
+              value:
+                failures:
+                  - code: SERVICE_UNAVAILABLE
+                    reason: Dependent systems are currently not responding.                  
+  parameters:
+    correlationId:
+      in: header
+      name: CorrelationId
+      description: A UUID format string for the transaction used for traceability purposes.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: f92d12cd-7087-42b9-b7ae-b32665c5dc31
+    arnParameter:
+      name: arn
+      in: path
+      description: "The Making Tax Digital (MTD) platform Agent Reference Number."
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Z](ARN)[0-9]{7}$'
+        example: AARN9999999
+      style: simple
+    serviceParameter:
+      name: service
+      in: path
+      description: The EACD service name on the enrolment key.
+      required: true
+      schema:
+        enum:
+        - HMRC-MTD-IT
+        - HMRC-MTD-IT-SUPP
+        - HMRC-MTD-VAT
+        type: string
+      style: simple
+    clientIdTypeParameter:
+      name: clientIdType
+      in: path
+      description: The type of the client identifier.
+      required: true
+      schema:
+        enum:
+        - MTDITID
+        - VRN
+        type: string
+      style: simple
+    clientIdParameter:
+      name: clientId
+      in: path
+      description: The client identifier (the client's VRN or MTDITID).
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9A-Za-z]{1,15}$'
+      examples:
+        vrn:
+          value: 123456789
+          summary: Example VAT number
+        mtditid:
+          value: XAIT00000000001
+          summary: Example MTDITID
+      style: simple
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          tokenUrl: /tokenUrl/not-required
+          scopes:
+            write:agent-client-enrolments: Scope for calling Agent Client Enrolments
