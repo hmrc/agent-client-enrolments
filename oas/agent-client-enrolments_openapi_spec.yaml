@@ -6,7 +6,7 @@ info:
     # Overview
     Following a VAT or Income Tax for Self Assessment (ITSA) trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
     # Changelog
-    1.1 [2024-11-08] updated response codes to remove 400 responses and added 500
+    1.1 [2024-11-08] updated response codes to remove responses for 400 and 503
     1.0 [2024-10-11] initial release.
   version: "1.1"
   x-integration-catalogue:
