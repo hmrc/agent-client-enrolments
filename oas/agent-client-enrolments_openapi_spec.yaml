@@ -6,8 +6,9 @@ info:
     # Overview
     Following a VAT or Income Tax for Self Assessment (ITSA) trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
     # Changelog
+    1.1 [2024-11-08] updated response codes to remove 400 responses and added 500
     1.0 [2024-10-11] initial release.
-  version: "1.0"
+  version: "1.1"
   x-integration-catalogue:
     reviewed-date: 2024-10-11T15:00:00Z
     platform: HIP
@@ -53,14 +54,10 @@ paths:
       responses:
         "204":
           $ref: '#/components/responses/successResponse'
-        "400":
-          $ref: '#/components/responses/badRequest'  
         "401":
           $ref: '#/components/responses/unauthorized'
         "500":
           $ref: '#/components/responses/internalServerError'
-        "503":
-          $ref: '#/components/responses/serviceUnavailable'
       deprecated: false
 components:
   headers:
@@ -104,52 +101,6 @@ components:
       headers:
         CorrelationId:
           $ref: '#/components/headers/CorrelationId'
-    badRequest:
-      description: >-
-        Bad request
-
-        ```
-
-        A bad request has been made; this could be due to one or more issues
-        with the request
-
-        "code"                              "reason"
-
-        INVALID_ARN                         Submission has not passed validation. Invalid parameter arn.
-
-        INVALID_SERVICENAME                 Submission has not passed validation. Invalid parameter serviceName.
-        
-        INVALID_IDTYPE                      Submission has not passed validation. Invalid parameter idType.
-        
-        INVALID_IDVALUE                     Submission has not passed validation. Invalid parameter idValue.
-
-        INVALID_CORRELATIONID               Submission has not passed validation. Invalid Header parameter CorrelationId.
-
-      headers:
-        CorrelationId:
-          $ref: '#/components/headers/CorrelationId'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/errorResponse'
-          examples:
-            Example1_SingleCode:
-              summary: Single Error Code
-              value:
-                failures:
-                  - code: INVALID_ARN
-                    reason: >-
-                      Submission has not passed validation. Invalid parameter arn.
-            Example2_MultipleErrorCodes:
-              summary: Multiple Error Codes
-              value:
-                failures:
-                  - code: INVALID_SERVICENAME
-                    reason: >-
-                      Submission has not passed validation. Invalid parameter serviceName.
-                  - code: INVALID_CORRELATIONID
-                    reason: >-
-                      Submission has not passed validation. Invalid Header parameter CorrelationId.
     unauthorized:
       description: Unauthorized
       headers:
@@ -181,28 +132,6 @@ components:
                 failures:
                   - code: INTERNAL_SERVER_ERROR
                     reason: Internal Server Error
-    serviceUnavailable:
-      description: >-
-        Service unavailable
-
-        ```
-
-        "code"                "reason"
-
-        SERVICE_UNAVAILABLE   Dependent systems are currently not responding.
-      headers:
-        CorrelationId:
-          $ref: '#/components/headers/CorrelationId'
-      content:
-        application/json;charset=UTF-8:
-          schema:
-            $ref: '#/components/schemas/errorResponse'
-          examples:
-            Example-ServerUnavailable:
-              value:
-                failures:
-                  - code: SERVICE_UNAVAILABLE
-                    reason: Dependent systems are currently not responding.                  
   parameters:
     correlationId:
       in: header
