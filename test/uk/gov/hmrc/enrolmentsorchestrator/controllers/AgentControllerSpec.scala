@@ -38,7 +38,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
 
   "DELETE /enrolments-orchestrator/agents/:ARN?terminationDate=Option[Long] ?= None" should {
 
-    "return 200, Request received and the attempt at deletion will be processed" in new Setup {
+    "return 204, Request received and the attempt at deletion will be processed" in new Setup {
       val testHttpResponse = HttpResponse(204, "done")
 
       val testAgentStatusChangeHttpResponse = HttpResponse(200, "done")
@@ -55,7 +55,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       val result = controller.deleteByARN(testARN, Some(testTerminationDate))(
         FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
       )
-      status(result) shouldBe OK
+      status(result) shouldBe NO_CONTENT
     }
 
     "return 401, Request received but request without a valid BasicAuth token" in new Setup {
@@ -169,7 +169,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
 
   "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
 
-    "return 200 when valid payload received" in new Setup {
+    "return 204 when valid payload received" in new Setup {
       when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(any))
         .thenReturn(Future.successful(()))
       when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(any, any))
@@ -179,7 +179,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       val result = controller.deleteInsolventTraders("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")(
         FakeRequest().withHeaders(AUTHORIZATION -> s"Basic ${encodeToBase64("AgentTermDESUser:password")}")
       )
-      status(result) shouldBe OK
+      status(result) shouldBe NO_CONTENT
     }
 
     "return 401 when invalid basic auth" in new Setup {

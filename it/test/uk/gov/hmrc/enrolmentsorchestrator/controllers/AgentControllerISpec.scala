@@ -35,7 +35,7 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
 
   "DELETE /enrolments-orchestrator/agents/:arn" should {
 
-    "return 200" when {
+    "return 204" when {
       "Request received and the attempt at deletion will be processed" in {
 
         agentStatusChangeReturnOK
@@ -48,9 +48,9 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
                 .url(resource(s"$es9DeleteBaseUrl/$testARN"))
                 .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
                 .delete()
-            ).status                                                                               shouldBe 200
+            ).status                                                                               shouldBe 204
             logEvents.length                                                                       shouldBe 1
-            logEvents.head.toString.contains("DELETE /enrolments-orchestrator/agents/AARN123 200") shouldBe true
+            logEvents.head.toString.contains("DELETE /enrolments-orchestrator/agents/AARN123 204") shouldBe true
           }
         }
       }
@@ -67,7 +67,7 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
                 .url(resource(s"$es9DeleteBaseUrl/$testARN"))
                 .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
                 .delete()
-            ).status         shouldBe 200
+            ).status         shouldBe 204
             logEvents.length shouldBe 1
             logEvents.head.toString.contains(
               "For enrolmentKey: HMRC-AS-AGENT~AgentReferenceNumber~AARN123 200 was not returned by Enrolments-Store, " +
@@ -130,13 +130,13 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
   }
 
   "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
-    "return 200" in {
+    "return 204" in {
       testEndpointToRemoveInsolventTraders("enrolments-orchestrator")
     }
   }
 
   "DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
-    "return 200" in {
+    "return 204" in {
       testEndpointToRemoveInsolventTraders("agent-client-enrolments")
     }
   }
@@ -154,7 +154,7 @@ class AgentControllerISpec extends TestSetupHelper with LogCapturing with Eventu
             .url(resource(s"/$endpointService/relationships/ZARN1234567/service/HMRC-MTD-VAT/client/VRN/123456789"))
             .withHttpHeaders(HeaderNames.authorisation -> s"Basic ${basicAuth("AgentTermDESUser:password")}")
             .delete()
-        ).status shouldBe 200
+        ).status shouldBe 204
 
         eventually {
           logEvents.length shouldBe 3
