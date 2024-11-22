@@ -45,12 +45,12 @@ More details about this end point: https://confluence.tools.tax.service.gov.uk/d
 
 Responds with:
 
-| Status        | Message       |
-|:-------------:|---------------|
-| 200  | Valid payload received. The attempt at deletion will be processed. Repeated calling with the same payload will always yield 200 |
-| 400  | Invalid payload or payload data insufficient for processing |
-| 401  | Unauthorised - the provided bearer token is either expired or not valid |
-| 50X  | Service error |
+| Status | Message                                                                                                                         |
+|:------:|---------------------------------------------------------------------------------------------------------------------------------|
+|  204   | Valid payload received. The attempt at deletion will be processed. Repeated calling with the same payload will always yield 204 |
+|  400   | Invalid payload or payload data insufficient for processing                                                                     |
+|  401   | Unauthorised - the provided bearer token is either expired or not valid                                                         |
+|  50X   | Service error                                                                                                                   |
 
 ## License
 

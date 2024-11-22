@@ -88,7 +88,7 @@ class AgentController @Inject() (
         .map { res =>
           if (res.status == 204) {
             auditService.auditSuccessfulAgentDeleteResponse(arn, tDate, res.status)(request)
-            Ok(res.body)
+            Status(NO_CONTENT)
           } else {
             auditService.auditFailedAgentDeleteResponse(arn, tDate, res.status, res.body)(request)
             new Status(res.status)(res.body)
@@ -138,10 +138,10 @@ class AgentController @Inject() (
                                                        clientIdType,
                                                        clientId,
                                                        true,
-                                                       200,
-                                                       "OK Request received and the attempt at deletion will be processed"
+                                                       204,
+                                                       "No Content Request received and the attempt at deletion will be processed"
                                                       )
-          } yield Ok)
+          } yield Status(NO_CONTENT))
             .recover { case _ =>
               auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, false, 500, "Internal Server Error")
               InternalServerError

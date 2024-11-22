@@ -6,11 +6,12 @@ info:
     # Overview
     Following a VAT or Income Tax for Self Assessment (ITSA) trader becoming insolvent, the relationship between the Trader and the Agent needs to be broken, so the Agent can no longer transact on behalf of the Insolvent Trader. This service supports a single endpoint to react to a trigger from ETMP and remove any agent-client relationships in EACD/Agent Services for an Insolvent client. As per Insolvency SDD.
     # Changelog
+    1.2 [2024-11-21] changed error response schema from [code, reason] to [type, reason] to align with other HIP error response schema
     1.1 [2024-11-08] updated response codes to remove responses for 400 and 503
     1.0 [2024-10-11] initial release.
-  version: "1.1"
+  version: "1.2"
   x-integration-catalogue:
-    reviewed-date: 2024-10-11T15:00:00Z
+    reviewed-date: 2024-11-21T15:00:00Z
     platform: HIP
     short-description: API that allows a trigger request for the removal of any agent-client
       relationships in EACD/Agent Services
@@ -83,10 +84,10 @@ components:
             type: object
             additionalProperties: false
             required:
-              - code
+              - type
               - reason
             properties:
-              code:
+              type:
                 description: Keys for all the errors returned
                 type: string
                 pattern: '^[A-Z0-9_-]{1,160}$'
@@ -114,7 +115,7 @@ components:
             unauthorizedRequest:
               value:
                 failures:
-                  - code: UNAUTHORIZED
+                  - type: UNAUTHORIZED
                     reason: Unauthorised - the provided bearer token is either expired
                       or not valid
     internalServerError:
@@ -130,7 +131,7 @@ components:
             internalServerError:
               value:
                 failures:
-                  - code: INTERNAL_SERVER_ERROR
+                  - type: INTERNAL_SERVER_ERROR
                     reason: Internal Server Error
   parameters:
     correlationId:
