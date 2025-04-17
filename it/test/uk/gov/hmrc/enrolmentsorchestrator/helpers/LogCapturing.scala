@@ -21,18 +21,18 @@ import ch.qos.logback.classic.{Level, Logger}
 import ch.qos.logback.core.read.ListAppender
 import play.api.LoggerLike
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 trait LogCapturing {
 
-  def withCaptureOfLoggingFrom(loggerLikes: LoggerLike*)(body: (=> List[ILoggingEvent]) => Unit) {
+  def withCaptureOfLoggingFrom(loggerLikes: LoggerLike*)(body: (=> List[ILoggingEvent]) => Unit): Unit = {
     val appender = new ListAppender[ILoggingEvent]()
     appender.start()
 
     for (loggerLike <- loggerLikes) {
       val logger = loggerLike.logger.asInstanceOf[Logger]
       logger.addAppender(appender)
-      logger.setLevel(Level.ALL)
+      logger.setLevel(Level.DEBUG)
       logger.setAdditive(true)
     }
 

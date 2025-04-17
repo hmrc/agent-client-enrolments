@@ -17,23 +17,27 @@
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
 import play.api.Logging
+import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton()
-class AgentClientAuthorisationConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
+class AgentClientAuthorisationConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
   lazy val baseUrl: String = appConfig.agentClientAuthorisationBaseUrl
 
   def deleteRelationship(arn: String, service: String, clientIdType: String, clientId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val url = s"$baseUrl/agent-client-authorisation/invitations/set-relationship-ended"
+    val requestUrl = s"$baseUrl/agent-client-authorisation/invitations/set-relationship-ended"
     httpClient
-      .PUT(url, Map("arn" -> arn, "clientId" -> clientId, "service" -> service))
+      .put(url"$requestUrl")
+      .withBody(Json.toJson(Map("arn" -> arn, "clientId" -> clientId, "service" -> service)))
+      .execute[HttpResponse]
       .andThen {
         case Success(response) =>
           logger.info(

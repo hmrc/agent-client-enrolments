@@ -16,35 +16,72 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.helpers
 
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.WsTestClient
+import uk.gov.hmrc.audit.WSClient
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import UrlHelper.-/
 
 trait TestSetupHelper
     extends AnyWordSpec
     with Matchers
-    with WsTestClient
     with BeforeAndAfterEach
     with SuiteMixin
     with BeforeAndAfterAll
     with ScalaFutures
     with IntegrationPatience
-    with GuiceOneServerPerSuite
-    with EnrolmentStoreWireMockSetup
-    with AgentStatusChangeWireMockSetup
-    with AgentClientAuthorisationWireMockSetup {
+    with GuiceOneServerPerSuite {
 
   val es9DeleteBaseUrl = "/enrolments-orchestrator/agents"
   val testARN = "AARN123"
+
+  val wiremockPort: Int    = 11111
+  val wiremockHost: String = "localhost"
+
+  override def beforeAll(): Unit = {
+    startWiremock()
+    super.beforeAll()
+  }
+
+  override def afterAll(): Unit = {
+    stopWiremock()
+    super.afterAll()
+  }
+
+  override def beforeEach(): Unit = {
+    resetWiremock()
+    super.beforeEach()
+  }
+
+  def config: Map[String, String] = Map(
+    "metrics.enabled" -> "false",
+    "auditing.enabled" -> "false",
+    "microservice.metrics.graphite.enabled" -> "false",
+    "microservice.services.auth.port" -> wiremockPort.toString,
+    "microservice.services.agent-client-authorisation.port" -> wiremockPort.toString,
+    "microservice.services.agent-status-change.port" -> wiremockPort.toString,
+    "microservice.services.enrolment-store-proxy.port" -> wiremockPort.toString,
+    "microservice.services.tax-enrolments.port" -> wiremockPort.toString
+  )
+
+  override lazy val app: Application = new GuiceApplicationBuilder()
+    .configure(config)
+    .build()
+
+  val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
   implicit val defaultTimeout: FiniteDuration = 3.minutes
 
@@ -53,11 +90,17 @@ trait TestSetupHelper
   def basicAuth(string: String): String = Base64.getEncoder.encodeToString(string.getBytes(UTF_8))
 
   def resource(path: String): String =
-    s"http://localhost:$port/${-/(path)}"
+    s"http://localhost:$port$path"
 
-}
+  lazy val wmConfig: WireMockConfiguration = wireMockConfig().port(wiremockPort)
+  lazy val wireMockServer: WireMockServer  = new WireMockServer(wmConfig)
 
-object UrlHelper {
-  def -/(uri: String) =
-    if (uri.startsWith("/")) uri.drop(1) else uri
+  def startWiremock(): Unit = {
+    wireMockServer.start()
+    WireMock.configureFor(wiremockHost, wiremockPort)
+  }
+
+  def stopWiremock(): Unit = wireMockServer.stop()
+
+  def resetWiremock(): Unit = WireMock.reset()
 }

@@ -8,10 +8,6 @@ Agents and Traders require the capability to have their accounts and associated 
 
 ## How to build and test
 
-Preconditions: `mongod` needs to be running for `it/test`
-
-`sm2 --start AGENT_CLIENT_ENROLMENTS_IT`
-
 `sbt clean coverage test it/test coverageReport`
 
 The test coverage report can be found in `$WORKSPACE/agent-client-enrolments/target/scala-2.13/scoverage-report/index.html`

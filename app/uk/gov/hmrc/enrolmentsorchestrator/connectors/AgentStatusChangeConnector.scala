@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class AgentStatusChangeConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig) {
+class AgentStatusChangeConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig) {
 
   lazy val agentStatusChangeBaseUrl: String = appConfig.agentStatusChangeBaseUrl
 
   def agentStatusChangeToTerminate(arn: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[HttpResponse] = {
-    val url = s"$agentStatusChangeBaseUrl/agent-status-change/agent/$arn/terminate"
-    httpClient.DELETE(url)
+    val requestUrl = s"$agentStatusChangeBaseUrl/agent-status-change/agent/$arn/terminate"
+    httpClient.delete(url"$requestUrl").execute[HttpResponse]
   }
 
 }

@@ -18,49 +18,51 @@ package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
 import play.api.Logging
 import play.api.http.HttpVerbs
-
-import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.enrolmentsorchestrator.models.DelegatedGroupIds
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
-
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, StringContextOps}
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton()
-class EnrolmentsStoreConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
+class EnrolmentsStoreConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
 
   lazy val enrolmentsStoreBaseUrl: String = appConfig.enrolmentsStoreBaseUrl
 
   // Query Groups who have an allocated Enrolment
   def es1GetPrincipalGroups(enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=principal"
-    httpClient.GET[HttpResponse](url)
+    val requestUrl = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=principal"
+    httpClient.get(url"$requestUrl").execute[HttpResponse]
   }
 
   def assignEnrolment(credId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[Unit] = {
-    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/users/$credId/enrolments/$enrolmentKey"
-    httpClient.POSTEmpty[HttpResponse](url).map(_ => ())
+    val requestUrl = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/users/$credId/enrolments/$enrolmentKey"
+    httpClient.post(url"$requestUrl").execute[HttpResponse].map(_ => ())
   }
 
   def es1GetDelegatedGroups(enrolmentKey: String)(implicit hc: HeaderCarrier, rds: HttpReads[DelegatedGroupIds]): Future[DelegatedGroupIds] = {
-    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=delegated"
+    val requestUrl = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=delegated"
     httpClient
-      .GET[HttpResponse](url)
+      .get(url"$requestUrl")
+      .execute[HttpResponse]
       .andThen {
         case Success(response) => logger.info(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups returned ${response.status}")
         case Failure(_)        => logger.error(s"[GG-5898] GET /enrolments/${hashString(enrolmentKey)}/groups failed")
       }
-      .map(rds.read(HttpVerbs.POST, url, _))
+      .map(rds.read(HttpVerbs.POST, requestUrl, _))
   }
 
   def es9DeallocateDelegatedEnrolment(groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val url = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false"
+    val requestUrl =
+      s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/groups/$groupId/enrolments/$enrolmentKey?keepAgentAllocations=false"
     httpClient
-      .DELETE[HttpResponse](url)
+      .delete(url"$requestUrl")
+      .execute[HttpResponse]
       .andThen {
         case Success(response) => logger.info(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} returned ${response.status}")
         case Failure(_)        => logger.error(s"[GG-5898] DELETE /groups/:groupId/enrolments/${hashString(enrolmentKey)} failed")

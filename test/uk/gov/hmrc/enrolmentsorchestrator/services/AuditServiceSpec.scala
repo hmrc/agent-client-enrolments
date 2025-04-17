@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.services
 
-import org.mockito.captor.ArgCaptor
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{verify, when}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.http.HeaderNames
@@ -31,24 +34,23 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
 
   "The auditing service" should {
     "send the correct audit event for an agent delete request" in new Setup {
-      val captor = ArgCaptor[ExtendedDataEvent]
+      val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
       val arn = "agent ref no"
       val timestamp = 1234567890L
 
-      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+      when(mockAuditConnector.sendExtendedEvent(captor.capture())(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
 
       auditService.auditDeleteRequest(arn, timestamp)(requestWithHeaders)
 
-      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
-      val event = captor.value
+      verify(mockAuditConnector).sendExtendedEvent(captor.capture())(any, any)
 
-      event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType   shouldBe "AgentDeleteRequest"
-      event.detail shouldBe Json.obj(
+      captor.getValue.auditSource shouldBe "agent-client-enrolments"
+      captor.getValue.auditType   shouldBe "AgentDeleteRequest"
+      captor.getValue.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
         "terminationDate"      -> timestamp
       )
-      event.tags shouldBe Map(
+      captor.getValue.tags shouldBe Map(
         "clientIP"                   -> clientIp,
         "path"                       -> requestWithHeaders.path,
         HeaderNames.xSessionId       -> sessionId,
@@ -61,26 +63,25 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "send the correct audit event for a successful agent delete response" in new Setup {
-      val captor = ArgCaptor[ExtendedDataEvent]
+      val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
       val arn = "agent ref no"
       val timestamp = 1234567890L
 
-      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+      when(mockAuditConnector.sendExtendedEvent(captor.capture())(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
 
       auditService.auditSuccessfulAgentDeleteResponse(arn, timestamp, 200)(requestWithHeaders)
 
-      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
-      val event = captor.value
+      verify(mockAuditConnector).sendExtendedEvent(captor.capture())(any, any)
 
-      event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType   shouldBe "AgentDeleteResponse"
-      event.detail shouldBe Json.obj(
+      captor.getValue.auditSource shouldBe "agent-client-enrolments"
+      captor.getValue.auditType   shouldBe "AgentDeleteResponse"
+      captor.getValue.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
         "terminationDate"      -> timestamp,
         "statusCode"           -> 200,
         "success"              -> true
       )
-      event.tags shouldBe Map(
+      captor.getValue.tags shouldBe Map(
         "clientIP"                   -> clientIp,
         "path"                       -> requestWithHeaders.path,
         HeaderNames.xSessionId       -> sessionId,
@@ -93,27 +94,26 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "send the correct audit event for a failed agent delete response" in new Setup {
-      val captor = ArgCaptor[ExtendedDataEvent]
+      val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
       val arn = "agent ref no"
       val timestamp = 1234567890L
 
-      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+      when(mockAuditConnector.sendExtendedEvent(captor.capture())(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
 
       auditService.auditFailedAgentDeleteResponse(arn, timestamp, 400, "bad stuff happened")(requestWithHeaders)
 
-      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
-      val event = captor.value
+      verify(mockAuditConnector).sendExtendedEvent(captor.capture())(any, any)
 
-      event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType   shouldBe "AgentDeleteResponse"
-      event.detail shouldBe Json.obj(
+      captor.getValue.auditSource shouldBe "agent-client-enrolments"
+      captor.getValue.auditType   shouldBe "AgentDeleteResponse"
+      captor.getValue.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
         "terminationDate"      -> timestamp,
         "statusCode"           -> 400,
         "success"              -> false,
         "failureReason"        -> "bad stuff happened"
       )
-      event.tags shouldBe Map(
+      captor.getValue.tags shouldBe Map(
         "clientIP"                   -> clientIp,
         "path"                       -> requestWithHeaders.path,
         HeaderNames.xSessionId       -> sessionId,
@@ -126,23 +126,22 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "send the correct audit event for a successful agent client relationship delete response" in new Setup {
-      val captor = ArgCaptor[ExtendedDataEvent]
+      val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
       val arn = "agent ref no"
       val service = "service"
       val clientIdType = "clientIdType"
       val clientId = "clientId"
       val failureReason = "OK"
 
-      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+      when(mockAuditConnector.sendExtendedEvent(captor.capture())(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
 
       auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, true, 200, failureReason)(requestWithHeaders)
 
-      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
-      val event = captor.value
+      verify(mockAuditConnector).sendExtendedEvent(captor.capture())(any, any)
 
-      event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType   shouldBe "AgentClientDeleteRequest"
-      event.detail shouldBe Json.obj(
+      captor.getValue.auditSource shouldBe "agent-client-enrolments"
+      captor.getValue.auditType   shouldBe "AgentClientDeleteRequest"
+      captor.getValue.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
         "service"              -> service,
         "clientIdType"         -> clientIdType,
@@ -151,7 +150,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
         "responseCode"         -> 200,
         "failureReason"        -> failureReason
       )
-      event.tags shouldBe Map(
+      captor.getValue.tags shouldBe Map(
         "clientIP"                   -> clientIp,
         "path"                       -> requestWithHeaders.path,
         HeaderNames.xSessionId       -> sessionId,
@@ -164,23 +163,22 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "send the correct audit event for a failed agent client relationship delete response" in new Setup {
-      val captor = ArgCaptor[ExtendedDataEvent]
+      val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
       val arn = "agent ref no"
       val service = "service"
       val clientIdType = "clientIdType"
       val clientId = "clientId"
       val failureReason = "error"
 
-      when(mockAuditConnector.sendExtendedEvent(captor)(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
+      when(mockAuditConnector.sendExtendedEvent(captor.capture())(any, any)).thenReturn(Future.successful(AuditResult.Disabled))
 
       auditService.auditClientDeleteResponse(arn, service, clientIdType, clientId, false, 500, failureReason)(requestWithHeaders)
 
-      verify(mockAuditConnector).sendExtendedEvent(captor)(any, any)
-      val event = captor.value
+      verify(mockAuditConnector).sendExtendedEvent(captor.capture())(any, any)
 
-      event.auditSource shouldBe "agent-client-enrolments"
-      event.auditType   shouldBe "AgentClientDeleteRequest"
-      event.detail shouldBe Json.obj(
+      captor.getValue.auditSource shouldBe "agent-client-enrolments"
+      captor.getValue.auditType   shouldBe "AgentClientDeleteRequest"
+      captor.getValue.detail shouldBe Json.obj(
         "agentReferenceNumber" -> arn,
         "service"              -> service,
         "clientIdType"         -> clientIdType,
@@ -189,7 +187,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
         "responseCode"         -> 500,
         "failureReason"        -> failureReason
       )
-      event.tags shouldBe Map(
+      captor.getValue.tags shouldBe Map(
         "clientIP"                   -> clientIp,
         "path"                       -> requestWithHeaders.path,
         HeaderNames.xSessionId       -> sessionId,
@@ -213,7 +211,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     val sessionId = "sessionId"
     val trustId = "someTrustId"
 
-    val requestWithHeaders = FakeRequest()
+    val requestWithHeaders: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
       .withHeaders(HeaderNames.trueClientIp -> clientIp)
       .withHeaders(HeaderNames.trueClientPort -> clientPort)
       .withHeaders(HeaderNames.akamaiReputation -> clientReputation)
@@ -221,7 +219,7 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       .withHeaders(HeaderNames.deviceID -> deviceId)
       .withHeaders(HeaderNames.xSessionId -> sessionId)
 
-    val mockAuditConnector = mock[AuditConnector]
+    val mockAuditConnector: AuditConnector = mock[AuditConnector]
 
     val auditService = new AuditService(mockAuditConnector)(ExecutionContext.global)
   }

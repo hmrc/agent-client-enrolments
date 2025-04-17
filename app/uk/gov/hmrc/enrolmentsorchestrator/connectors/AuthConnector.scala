@@ -16,22 +16,25 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
-import javax.inject.{Inject, Singleton}
+import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.models.PrivilegedApplicationClientLogin
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class AuthConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig) {
+class AuthConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig) {
 
   lazy val authBaseUrl: String = appConfig.authBaseUrl
 
   def createBearerToken(applicationName: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[HttpResponse] = {
     val requestBody = PrivilegedApplicationClientLogin(applicationName = Some(applicationName))
-    httpClient.POST(s"$authBaseUrl/auth/sessions", requestBody)
+    val requestUrl = s"$authBaseUrl/auth/sessions"
+    httpClient.post(url"$requestUrl").withBody(Json.toJson(requestBody)).execute[HttpResponse]
   }
 
 }
