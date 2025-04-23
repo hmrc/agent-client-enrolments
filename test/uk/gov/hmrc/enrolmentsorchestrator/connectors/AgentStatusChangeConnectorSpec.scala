@@ -17,20 +17,21 @@
 package uk.gov.hmrc.enrolmentsorchestrator.connectors
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.contains
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
+import java.net.URL
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AgentStatusChangeConnectorSpec extends UnitSpec with MockitoSugar {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
+  val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
+  val requestBuilder: RequestBuilder = mock[RequestBuilder]
   val mockAppConfig: AppConfig = mock[AppConfig]
 
   val connector = new AgentStatusChangeConnector(mockHttpClient, mockAppConfig)
@@ -39,7 +40,9 @@ class AgentStatusChangeConnectorSpec extends UnitSpec with MockitoSugar {
     "connect to AgentStatusChange and return HttpResponse" in {
       val testHttpResponse = HttpResponse(200, "")
       val arn = "arn"
-      when(mockHttpClient.DELETE[HttpResponse](contains(arn), any)(any, any, any)).thenReturn(Future.successful(testHttpResponse))
+      when(mockAppConfig.agentStatusChangeBaseUrl).thenReturn("http://localhost:1111")
+      when(mockHttpClient.delete(any[URL])(any[HeaderCarrier])).thenReturn(requestBuilder)
+      when(requestBuilder.execute(any[HttpReads[HttpResponse]], any[ExecutionContext])).thenReturn(Future.successful(testHttpResponse))
       await(connector.agentStatusChangeToTerminate(arn)) shouldBe testHttpResponse
     }
   }

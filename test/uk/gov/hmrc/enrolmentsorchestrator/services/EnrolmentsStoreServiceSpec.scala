@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.services
 
-import org.mockito.scalatest.MockitoSugar
+import org.mockito.ArgumentMatchers.{any, contains}
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.{AgentClientAuthorisationConnector, EnrolmentsStoreConnector, TaxEnrolmentConnector}

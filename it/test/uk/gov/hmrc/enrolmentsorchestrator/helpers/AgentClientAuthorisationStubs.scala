@@ -16,21 +16,12 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.helpers
 
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
-trait AgentClientAuthorisationWireMockSetup {
-
-  val agentClientAuthorisationHost: String = "localhost"
-  val agentClientAuthorisationPort: Int = 9432
-  val wireMockAgentClientAuthorisationServer = new WireMockServer(wireMockConfig().port(agentClientAuthorisationPort))
+trait AgentClientAuthorisationStubs {
 
   def startDeleteRelationship: StubMapping = {
-    WireMock.configureFor(agentClientAuthorisationHost, agentClientAuthorisationPort)
-    wireMockAgentClientAuthorisationServer.start()
 
     stubFor(
       put(urlEqualTo("/agent-client-authorisation/invitations/set-relationship-ended"))

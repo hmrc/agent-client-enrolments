@@ -20,17 +20,20 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.HeaderNames.AUTHORIZATION
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.enrolmentsorchestrator.UnitSpec
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
-import uk.gov.hmrc.enrolmentsorchestrator.models.PrivilegedApplicationClientLogin
-import uk.gov.hmrc.http.{HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
+import java.net.URL
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AuthConnectorSpec extends UnitSpec with MockitoSugar {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
+  val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
+  val requestBuilder: RequestBuilder = mock[RequestBuilder]
   val mockAppConfig: AppConfig = mock[AppConfig]
 
   val connector = new AuthConnector(mockHttpClient, mockAppConfig)
@@ -38,8 +41,10 @@ class AuthConnectorSpec extends UnitSpec with MockitoSugar {
   "AuthConnector" should {
     "connect to auth to create session" in {
       val testHttpResponse = HttpResponse(200, "", headers = Map(AUTHORIZATION -> Seq(AUTHORIZATION)))
-      when(mockHttpClient.POST[PrivilegedApplicationClientLogin, HttpResponse](any, any, any)(any, any, any, any))
-        .thenReturn(Future.successful(testHttpResponse))
+      when(mockAppConfig.authBaseUrl).thenReturn("http://localhost:1111")
+      when(mockHttpClient.post(any[URL])(any[HeaderCarrier])).thenReturn(requestBuilder)
+      when(requestBuilder.withBody[JsValue](any[JsValue])(any, any, any[ExecutionContext])).thenReturn(requestBuilder)
+      when(requestBuilder.execute(any[HttpReads[HttpResponse]], any[ExecutionContext])).thenReturn(Future.successful(testHttpResponse))
       await(connector.createBearerToken("applicationName")).header(AUTHORIZATION) shouldBe Some(AUTHORIZATION)
     }
   }
