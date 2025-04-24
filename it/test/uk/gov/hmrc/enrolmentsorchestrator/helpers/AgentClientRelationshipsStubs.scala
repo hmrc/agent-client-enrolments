@@ -19,12 +19,12 @@ package uk.gov.hmrc.enrolmentsorchestrator.helpers
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
-trait AgentClientAuthorisationStubs {
+trait AgentClientRelationshipsStubs {
 
-  def startDeleteRelationship: StubMapping = {
+  def startCleanUpInvitationStatus: StubMapping = {
 
     stubFor(
-      put(urlEqualTo("/agent-client-authorisation/invitations/set-relationship-ended"))
+      put(urlEqualTo("/agent-client-relationships/cleanup-invitation-status"))
         .withRequestBody(equalToJson("""
             |{
             |    "arn": "ZARN1234567",
@@ -32,7 +32,7 @@ trait AgentClientAuthorisationStubs {
             |    "service": "HMRC-MTD-VAT"
             |}
             |""".stripMargin))
-        .willReturn(aResponse().withStatus(200))
+        .willReturn(aResponse().withStatus(204))
     )
   }
 

@@ -71,7 +71,7 @@ trait TestSetupHelper
     "auditing.enabled" -> "false",
     "microservice.metrics.graphite.enabled" -> "false",
     "microservice.services.auth.port" -> wiremockPort.toString,
-    "microservice.services.agent-client-authorisation.port" -> wiremockPort.toString,
+    "microservice.services.agent-client-relationships.port" -> wiremockPort.toString,
     "microservice.services.agent-status-change.port" -> wiremockPort.toString,
     "microservice.services.enrolment-store-proxy.port" -> wiremockPort.toString,
     "microservice.services.tax-enrolments.port" -> wiremockPort.toString
