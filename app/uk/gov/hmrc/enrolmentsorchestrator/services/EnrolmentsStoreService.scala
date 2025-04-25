@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 class EnrolmentsStoreService @Inject() (
   enrolmentsStoreConnector: EnrolmentsStoreConnector,
   taxEnrolmentConnector: TaxEnrolmentConnector,
-  agentClientAuthorisationConnector: AgentClientAuthorisationConnector
+  agentClientRelationshipsConnector: AgentClientRelationshipsConnector
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -76,7 +76,7 @@ class EnrolmentsStoreService @Inject() (
     val enrolmentKey = s"$service~$clientIdType~$clientId"
 
     (for {
-      _        <- agentClientAuthorisationConnector.deleteRelationship(arn, service, clientIdType, clientId)
+      _        <- agentClientRelationshipsConnector.cleanupInvitationStatus(arn, service, clientId)
       groupIds <- enrolmentsStoreConnector.es1GetDelegatedGroups(enrolmentKey)
       _ = groupIds.delegatedGroupIds.map(groupId => enrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(groupId, enrolmentKey))
     } yield ())

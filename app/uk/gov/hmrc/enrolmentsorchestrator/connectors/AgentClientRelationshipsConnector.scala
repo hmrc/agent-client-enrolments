@@ -20,32 +20,29 @@ import play.api.Logging
 import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
-
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton()
-class AgentClientAuthorisationConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
-  lazy val baseUrl: String = appConfig.agentClientAuthorisationBaseUrl
+class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
+  lazy val baseUrl: String = appConfig.agentClientRelationshipsBaseUrl
 
-  def deleteRelationship(arn: String, service: String, clientIdType: String, clientId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val requestUrl = s"$baseUrl/agent-client-authorisation/invitations/set-relationship-ended"
+  def cleanupInvitationStatus(arn: String, service: String, clientId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     httpClient
-      .put(url"$requestUrl")
+      .put(url"$baseUrl/agent-client-relationships/cleanup-invitation-status")
       .withBody(Json.toJson(Map("arn" -> arn, "clientId" -> clientId, "service" -> service)))
       .execute[HttpResponse]
       .andThen {
         case Success(response) =>
           logger.info(
-            s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}"
+            s"PUT agent-client-relationships/cleanup-invitation-status for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}"
           )
         case Failure(_) =>
           logger.error(
-            s"[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service failed"
+            s"PUT agent-client-relationships/cleanup-invitation-status for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service failed"
           )
       }
   }

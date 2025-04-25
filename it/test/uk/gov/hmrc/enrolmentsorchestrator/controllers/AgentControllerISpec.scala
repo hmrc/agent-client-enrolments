@@ -18,13 +18,13 @@ package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
 import org.scalatest.concurrent.Eventually
 import play.api.Logger
-import uk.gov.hmrc.enrolmentsorchestrator.connectors.{AgentClientAuthorisationConnector, EnrolmentsStoreConnector}
+import uk.gov.hmrc.enrolmentsorchestrator.connectors.{AgentClientRelationshipsConnector, EnrolmentsStoreConnector}
 import uk.gov.hmrc.enrolmentsorchestrator.helpers._
 import uk.gov.hmrc.enrolmentsorchestrator.services.EnrolmentsStoreService
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter
 
-class AgentControllerISpec extends TestSetupHelper with AgentClientAuthorisationStubs with EnrolmentStoreStubs
+class AgentControllerISpec extends TestSetupHelper with AgentClientRelationshipsStubs with EnrolmentStoreStubs
   with AgentStatusChangeStubs with AuthStubs with LogCapturing with Eventually {
 
   "DELETE /enrolments-orchestrator/agents/:arn" should {
@@ -131,11 +131,11 @@ class AgentControllerISpec extends TestSetupHelper with AgentClientAuthorisation
 
   private def testEndpointToRemoveInsolventTraders(endpointService: String): Unit = {
     stubAuthorised
-    startDeleteRelationship
+    startCleanUpInvitationStatus
     startDeleteEnrolmentsForGroup
 
     val logger1 = Logger(classOf[EnrolmentsStoreConnector])
-    val logger2 = Logger(classOf[AgentClientAuthorisationConnector])
+    val logger2 = Logger(classOf[AgentClientRelationshipsConnector])
     withCaptureOfLoggingFrom(logger1, logger2) { logEvents =>
       await(
         wsClient
@@ -147,7 +147,7 @@ class AgentControllerISpec extends TestSetupHelper with AgentClientAuthorisation
       eventually {
         logEvents.length shouldBe 3
         logEvents.map(_.getMessage) shouldBe List(
-          "[GG-5898] PUT agent-client-authorisation/invitations/set-relationship-ended for ARN ***567, clientId ***789, service HMRC-MTD-VAT returned 200",
+          "PUT agent-client-relationships/cleanup-invitation-status for ARN ***567, clientId ***789, service HMRC-MTD-VAT returned 204",
           "[GG-5898] GET /enrolments/***789/groups returned 200",
           "[GG-5898] DELETE /groups/:groupId/enrolments/***789 returned 204"
         )
