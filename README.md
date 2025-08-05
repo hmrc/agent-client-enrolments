@@ -12,6 +12,10 @@ Agents and Traders require the capability to have their accounts and associated 
 
 The test coverage report can be found in `$WORKSPACE/agent-client-enrolments/target/scala-2.13/scoverage-report/index.html`
 
+### Automated testing
+This service is tested by the following automated test repositories:
+- [agent-client-enrolments-performance-tests](https://github.com/hmrc/agent-client-enrolments-performance-tests)
+
 ## Public API
 
 | Path                               | Description                                          |
