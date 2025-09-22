@@ -122,6 +122,13 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
       await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
     }
 
+    "return ok when downstream AgentClientAuthorisationConnector returns 404 " in {
+      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(any)).thenReturn(Future.successful(HttpResponse(404, "")))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(any)).thenReturn(Future.successful(HttpResponse(204, "")))
+      await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
+    }
+
     "return ok when downstream EnrolmentsStoreConnector fails " in {
       when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
       when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
