@@ -14,12 +14,9 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test
   )
   .settings(ScoverageSettings())
-  .settings(DefaultBuildSettings.scalaSettings *)
-  .settings(DefaultBuildSettings.defaultSettings() *)
   .settings(scalafmtOnCompile := true)
   .settings(scalacOptions += "-Wconf:src=routes/.*:s")
   .settings(PlayKeys.playDefaultPort := 9456)
-  .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
   .settings(
     Compile / packageDoc / publishArtifact := false,

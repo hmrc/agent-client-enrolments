@@ -22,9 +22,11 @@ import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+
+import uk.gov.hmrc.http.HttpReads.Implicits._
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 @Singleton()
 class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) extends Logging {
@@ -35,16 +37,11 @@ class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClientV2, app
       .put(url"$baseUrl/agent-client-relationships/cleanup-invitation-status")
       .withBody(Json.toJson(Map("arn" -> arn, "clientId" -> clientId, "service" -> service)))
       .execute[HttpResponse]
-      .andThen {
-        case Success(response) =>
-          logger.info(
-            s"PUT agent-client-relationships/cleanup-invitation-status for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}"
-          )
-        case Failure(_) =>
-          logger.error(
-            s"PUT agent-client-relationships/cleanup-invitation-status for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service failed"
-          )
+      .map { response =>
+        logger.info(
+          s"PUT agent-client-relationships/cleanup-invitation-status for ARN ${hashString(arn)}, clientId ${hashString(clientId)}, service $service returned ${response.status}"
+        )
+        response
       }
   }
-
 }

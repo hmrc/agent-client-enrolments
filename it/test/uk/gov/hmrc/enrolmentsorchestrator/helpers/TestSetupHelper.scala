@@ -27,7 +27,6 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, SuiteMixin}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.WsTestClient
 import uk.gov.hmrc.audit.WSClient
 
 import java.nio.charset.StandardCharsets.UTF_8

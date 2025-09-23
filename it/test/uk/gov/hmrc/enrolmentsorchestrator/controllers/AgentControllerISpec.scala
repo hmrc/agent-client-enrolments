@@ -119,19 +119,25 @@ class AgentControllerISpec extends TestSetupHelper with AgentClientRelationships
 
   "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
     "return 204" in {
-      testEndpointToRemoveInsolventTraders("enrolments-orchestrator")
+      testEndpointToRemoveInsolventTraders("enrolments-orchestrator", 204)
+    }
+    "return 204 if ACR call returns error" in {
+      testEndpointToRemoveInsolventTraders("enrolments-orchestrator", 404)
     }
   }
 
   "DELETE /agent-client-enrolments/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
     "return 204" in {
-      testEndpointToRemoveInsolventTraders("agent-client-enrolments")
+      testEndpointToRemoveInsolventTraders("agent-client-enrolments", 204)
+    }
+    "return 204 if ACR call returns error" in {
+      testEndpointToRemoveInsolventTraders("enrolments-orchestrator", 404)
     }
   }
 
-  private def testEndpointToRemoveInsolventTraders(endpointService: String): Unit = {
+  private def testEndpointToRemoveInsolventTraders(endpointService: String, cleanUpInvitationResponseStatus: Int): Unit = {
     stubAuthorised
-    startCleanUpInvitationStatus
+    startCleanUpInvitationStatus(cleanUpInvitationResponseStatus)
     startDeleteEnrolmentsForGroup
 
     val logger1 = Logger(classOf[EnrolmentsStoreConnector])
@@ -147,7 +153,7 @@ class AgentControllerISpec extends TestSetupHelper with AgentClientRelationships
       eventually {
         logEvents.length shouldBe 3
         logEvents.map(_.getMessage) shouldBe List(
-          "PUT agent-client-relationships/cleanup-invitation-status for ARN ***567, clientId ***789, service HMRC-MTD-VAT returned 204",
+          s"PUT agent-client-relationships/cleanup-invitation-status for ARN ***567, clientId ***789, service HMRC-MTD-VAT returned $cleanUpInvitationResponseStatus",
           "[GG-5898] GET /enrolments/***789/groups returned 200",
           "[GG-5898] DELETE /groups/:groupId/enrolments/***789 returned 204"
         )

@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait AgentClientRelationshipsStubs {
 
-  def startCleanUpInvitationStatus: StubMapping = {
+  def startCleanUpInvitationStatus(status: Int): StubMapping = {
 
     stubFor(
       put(urlEqualTo("/agent-client-relationships/cleanup-invitation-status"))
@@ -32,8 +32,9 @@ trait AgentClientRelationshipsStubs {
             |    "service": "HMRC-MTD-VAT"
             |}
             |""".stripMargin))
-        .willReturn(aResponse().withStatus(204))
+        .willReturn(aResponse().withStatus(status))
     )
   }
+
 
 }
