@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  title: "Agent Client Enrolments API"
+  description: "API for managing agent and client enrolments within the HMRC Agents Platform. This service orchestrates enrolments between enrolment-store-proxy and tax-enrolments for agents and their clients."
+  version: "v0.62.0"
+servers:
+  - url: "http://localhost:9448"
+    description: Local development server
+
+tags:
+  - name: "Agent Controller"
+    description: "Operations for managing agent enrolments and relationships"
+
+paths:
+  /enrolments-orchestrator/agents/{arn}:
+    delete:
+      summary: "De-enrol an agent by ARN"
+      description: |
+        De-enrol an agent and terminate their active sessions based on their Agent Reference Number (ARN).
+
+        This endpoint will:
+        - Request termination of the agent's status via agent-status-change service
+        - Delete the agent's enrolment from the enrolment store
+      tags:
+        - "Agent Controller"
+      parameters:
+        - name: arn
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[A-Z]ARN[0-9]{7}$"
+          description: "The Agent Reference Number (e.g., BARN0123456)"
+          example: "BARN0123456"
+        - name: terminationDate
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: "The date of termination in epoch milliseconds. Defaults to the current time."
+          example: 1697198400000
+      responses:
+        "204":
+          description: "Agent de-enrolment successful"
+        "400":
+          description: "Bad Request - Invalid ARN format"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: "Agent not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /relationships/{arn}/service/{service}/client/{clientIdType}/{clientId}:
+    delete:
+      summary: "De-allocate a client's enrolment from an agent"
+      description: |
+        De-allocates an agent's client's enrolment from the agent's group, and deletes the relationship.
+
+        This endpoint will:
+        - Get principal group IDs for the client's enrolment
+        - Delete the client's enrolment from their group(s)
+        - Get the agent's group ID
+        - De-allocate the client's enrolment from the agent's group
+        - Delete the agent-client relationship
+      tags:
+        - "Agent Controller"
+      parameters:
+        - name: arn
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[A-Z]ARN[0-9]{7}$"
+          description: "The Agent Reference Number (e.g., BARN0123456)"
+          example: "BARN0123456"
+        - name: service
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The service identifier (e.g., HMRC-MTD-VAT)"
+          example: "HMRC-MTD-VAT"
+        - name: clientIdType
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The type of client identifier (e.g., VRN)"
+          example: "VRN"
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The client identifier value"
+          example: "123456789"
+      responses:
+        "204":
+          description: "Client de-allocation successful"
+        "400":
+          description: "Bad Request - Invalid parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: "Agent or client relationship not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Error code identifier"
+          example: "INVALID_ARN"
+        message:
+          type: string
+          description: "Human-readable error message"
+          example: "The provided ARN format is invalid"
+      required:
+        - code
+        - message
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: "Basic Authentication for internal API access"
+
+security:
+  - basicAuth: []
