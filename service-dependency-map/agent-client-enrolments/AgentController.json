@@ -1,0 +1,88 @@
+{
+    "microservice": "agent-client-enrolments",
+    "controller": "AgentController",
+    "apis": [
+        {
+            "endpoint": "DELETE /enrolments-orchestrator/agents/:arn",
+            "description": "De-enrol an agent and terminate their active sessions based on their Agent Reference Number (ARN).",
+            "interactions": [
+                {
+                    "step": 1,
+                    "type": "API Call",
+                    "service": "agent-status-change",
+                    "method": "POST",
+                    "path": "/agent-status-change/terminate/:arn",
+                    "database": null,
+                    "operation": null,
+                    "description": "Request to terminate the agent's status."
+                },
+                {
+                    "step": 2,
+                    "type": "API Call",
+                    "service": "enrolment-store-proxy",
+                    "method": "DELETE",
+                    "path": "/enrolment-store-proxy/enrolment-store/enrolments/:enrolmentKey",
+                    "database": null,
+                    "operation": null,
+                    "description": "Delete the agent's enrolment from the enrolment store."
+                }
+            ]
+        },
+        {
+            "endpoint": "DELETE /relationships/:arn/service/:service/client/:clientIdType/:clientId",
+            "description": "De-allocates an agent's client's enrolment from the agent's group, and deletes the relationship.",
+            "interactions": [
+                {
+                    "step": 1,
+                    "type": "API Call",
+                    "service": "enrolment-store-proxy",
+                    "method": "GET",
+                    "path": "/enrolment-store-proxy/enrolment-store/enrolments/:enrolmentKey/groups",
+                    "database": null,
+                    "operation": null,
+                    "description": "Get principal group IDs for the client's enrolment."
+                },
+                {
+                    "step": 2,
+                    "type": "API Call",
+                    "service": "enrolment-store-proxy",
+                    "method": "DELETE",
+                    "path": "/enrolment-store-proxy/enrolment-store/groups/:groupId/enrolments/:enrolmentKey",
+                    "database": null,
+                    "operation": null,
+                    "description": "Delete the client's enrolment from their group (for each group ID found)."
+                },
+                {
+                    "step": 3,
+                    "type": "API Call",
+                    "service": "enrolment-store-proxy",
+                    "method": "GET",
+                    "path": "/enrolment-store-proxy/enrolment-store/delegated-enrolments/:arn/group-id",
+                    "database": null,
+                    "operation": null,
+                    "description": "Get the group ID for the agent's ARN."
+                },
+                {
+                    "step": 4,
+                    "type": "API Call",
+                    "service": "tax-enrolments",
+                    "method": "DELETE",
+                    "path": "/tax-enrolments/groups/:agentGroupId/enrolments/:enrolmentKey",
+                    "database": null,
+                    "operation": null,
+                    "description": "De-allocate the client's enrolment from the agent's group."
+                },
+                {
+                    "step": 5,
+                    "type": "API Call",
+                    "service": "agent-client-relationships",
+                    "method": "DELETE",
+                    "path": "/agent-client-relationships/agent/:arn/service/:service/client/:clientId",
+                    "database": null,
+                    "operation": null,
+                    "description": "Delete the agent-client relationship."
+                }
+            ]
+        }
+    ]
+}

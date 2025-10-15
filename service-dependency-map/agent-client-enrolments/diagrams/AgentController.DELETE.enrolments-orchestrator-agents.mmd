@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant Upstream
+    participant agent-client-enrolments
+    participant agent-status-change
+    participant enrolment-store-proxy
+
+    Upstream->>+agent-client-enrolments: DELETE /enrolments-orchestrator/agents/:arn
+    agent-client-enrolments->>+agent-status-change: POST /agent-status-change/terminate/:arn
+    agent-status-change-->>-agent-client-enrolments: 200 OK
+    agent-client-enrolments->>+enrolment-store-proxy: DELETE /enrolment-store-proxy/enrolment-store/enrolments/:enrolmentKey
+    enrolment-store-proxy-->>-agent-client-enrolments: 204 No Content
+    agent-client-enrolments-->>-Upstream: 204 No Content

@@ -1,0 +1,22 @@
+sequenceDiagram
+    autonumber
+    participant Upstream
+    participant agent-client-enrolments
+    participant enrolment-store-proxy
+    participant tax-enrolments
+    participant agent-client-relationships
+
+    Upstream->>+agent-client-enrolments: DELETE /relationships/:arn/service/:service/client/:clientIdType/:clientId
+    agent-client-enrolments->>+enrolment-store-proxy: GET /enrolment-store-proxy/enrolment-store/enrolments/:enrolmentKey/groups
+    enrolment-store-proxy-->>-agent-client-enrolments: 200 OK (returns group IDs)
+    loop for each groupId
+        agent-client-enrolments->>+enrolment-store-proxy: DELETE /enrolment-store-proxy/enrolment-store/groups/:groupId/enrolments/:enrolmentKey
+        enrolment-store-proxy-->>-agent-client-enrolments: 204 No Content
+    end
+    agent-client-enrolments->>+enrolment-store-proxy: GET /enrolment-store-proxy/enrolment-store/delegated-enrolments/:arn/group-id
+    enrolment-store-proxy-->>-agent-client-enrolments: 200 OK (returns agent group ID)
+    agent-client-enrolments->>+tax-enrolments: DELETE /tax-enrolments/groups/:agentGroupId/enrolments/:enrolmentKey
+    tax-enrolments-->>-agent-client-enrolments: 204 No Content
+    agent-client-enrolments->>+agent-client-relationships: DELETE /agent-client-relationships/agent/:arn/service/:service/client/:clientId
+    agent-client-relationships-->>-agent-client-enrolments: 204 No Content
+    agent-client-enrolments-->>-Upstream: 204 No Content
