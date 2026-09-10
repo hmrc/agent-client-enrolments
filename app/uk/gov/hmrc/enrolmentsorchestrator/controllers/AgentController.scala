@@ -82,6 +82,9 @@ class AgentController @Inject() (
     request: Request[?]
   ): Future[Result] = {
     authService.createBearerToken(basicAuth).flatMap { bearerToken =>
+      // A new HeaderCarrier that contains the authorisation bearerToken from the session is created and used here
+      // instead of using the implicit request (of type Request[?]) to ensure we get the proper authorisation
+      // which request does not contain
       implicit val newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
       enrolmentsStoreService
         .terminationByEnrolmentKey(enrolmentKey)(using newHeaderCarrier)
@@ -131,8 +134,11 @@ class AgentController @Inject() (
         }(basicAuth =>
           (for {
             bearerToken <- authService.createBearerToken(basicAuth)
+            // A new HeaderCarrier that contains the authorisation bearerToken from the session is created and used here
+            // instead of using the implicit request (of type Request[AnyContent]) to ensure we get the proper authorisation
+            // which request does not contain
             newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
-            _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(using newHeaderCarrier)
+            _ <- enrolmentsStoreService.deleteEnrolments(arn, service, clientIdType, clientId)(using newHeaderCarrier, request)
             _ = auditService.auditClientDeleteResponse(arn,
                                                        service,
                                                        clientIdType,

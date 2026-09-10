@@ -23,14 +23,15 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.{AgentClientRelationshipsConnector, EnrolmentsStoreConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.enrolmentsorchestrator.models.{DelegatedGroupIds, PrincipalGroupIds}
-import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds._
+import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds.*
+import uk.gov.hmrc.enrolmentsorchestrator.utilities.RequestAwareLogging
 import uk.gov.hmrc.enrolmentsorchestrator.{LogCapturing, UnitSpec}
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with MockitoSugar {
+class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with MockitoSugar with RequestAwareLogging {
 
   val mockEnrolmentsStoreConnector: EnrolmentsStoreConnector = mock[EnrolmentsStoreConnector]
   val mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnector]
@@ -78,7 +79,7 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         logEvents.collectFirst { case logEvent =>
           logEvent.getMessage shouldBe "For enrolmentKey: enrolmentKey 200 was not returned by Enrolments-Store, " +
             "ie no groupId found there are no allocated groups (the enrolment itself may or may not actually exist) " +
-            "or there is nothing to return, the response is 204 with body "
+            "or there is nothing to return, the response is 204 with body  [Context: GET /] [SessionId: ] [RequestId: ] [UserAgent: ] [Referer: ] [DeviceId: None] "
         }
 
       }
@@ -100,7 +101,7 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
         logEvents.length shouldBe 1
         logEvents.collectFirst { case logEvent =>
           logEvent.getMessage shouldBe s"For enrolmentKey: $enrolmentKey and groupId: $groupId 204 was not returned by Tax-Enrolments, " +
-            s"the response is 400 with body "
+            s"the response is 400 with body  [Context: GET /] [SessionId: ] [RequestId: ] [UserAgent: ] [Referer: ] [DeviceId: None] "
         }
 
       }
@@ -109,32 +110,35 @@ class EnrolmentsStoreServiceSpec extends UnitSpec with LogCapturing with Mockito
 
   "deleteEnrolments" should {
     "return ok when all downstreams return ok " in {
-      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any))
+      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any, any))
         .thenReturn(Future.successful(HttpResponse(204, "")))
-      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
-      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any)).thenReturn(Future.successful(HttpResponse(204, "")))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any, any))
+        .thenReturn(Future.successful(HttpResponse(204, "")))
       await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
     }
 
     "return ok when downstream AgentClientAuthorisationConnector fails " in {
-      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any)).thenReturn(Future.failed(new Throwable))
-      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
-      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any)).thenReturn(Future.successful(HttpResponse(204, "")))
+      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any, any)).thenReturn(Future.failed(new Throwable))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any, any))
+        .thenReturn(Future.successful(HttpResponse(204, "")))
       await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
     }
 
     "return ok when downstream AgentClientAuthorisationConnector returns 404 " in {
-      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any))
+      when(mockAgentClientRelationshipsConnector.cleanupInvitationStatus(any, any, any)(using any, any))
         .thenReturn(Future.successful(HttpResponse(404, "")))
-      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
-      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any)).thenReturn(Future.successful(HttpResponse(204, "")))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any, any))
+        .thenReturn(Future.successful(HttpResponse(204, "")))
       await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
     }
 
     "return ok when downstream EnrolmentsStoreConnector fails " in {
-      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
-      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
-      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any)).thenReturn(Future.failed(new Throwable))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es1GetDelegatedGroups(any)(using any, any, any)).thenReturn(Future.successful(DelegatedGroupIds(Nil)))
+      when(mockEnrolmentsStoreConnector.es9DeallocateDelegatedEnrolment(any, any)(using any, any)).thenReturn(Future.failed(new Throwable))
       await(enrolmentsStoreService.deleteEnrolments("ZARN1234567", "HMRC-MTD-VAT", "VRN", "123456789")) shouldBe ((): Unit)
     }
   }
