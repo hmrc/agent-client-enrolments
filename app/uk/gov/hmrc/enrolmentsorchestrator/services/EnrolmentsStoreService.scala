@@ -38,7 +38,7 @@ class EnrolmentsStoreService @Inject() (
 )(using ec: ExecutionContext)
     extends RequestAwareLogging {
 
-  def terminationByEnrolmentKey(enrolmentKey: String)(using hc: HeaderCarrier, requestHeader: RequestHeader): Future[HttpResponse] = {
+  def terminationByEnrolmentKey(enrolmentKey: String)(using requestHeader: RequestHeader): Future[HttpResponse] = {
     enrolmentsStoreConnector.es1GetPrincipalGroups(enrolmentKey).flatMap { response =>
       response.status match {
         case 200 =>

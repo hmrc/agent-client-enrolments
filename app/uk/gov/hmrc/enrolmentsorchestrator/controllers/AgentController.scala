@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.enrolmentsorchestrator.controllers
 
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.AgentStatusChangeConnector
 import uk.gov.hmrc.enrolmentsorchestrator.models.BasicAuthentication
@@ -81,23 +81,22 @@ class AgentController @Inject() (
   private def continueES9(basicAuth: BasicAuthentication, arn: String, tDate: Long, enrolmentKey: String)(implicit
     request: Request[?]
   ): Future[Result] = {
-    authService.createBearerToken(basicAuth).flatMap { bearerToken =>
-      // A new HeaderCarrier that contains the authorisation bearerToken from the session is created and used here
-      // instead of using the implicit request (of type Request[?]) to ensure we get the proper authorisation
-      // which request does not contain
-      implicit val newHeaderCarrier: HeaderCarrier = HeaderCarrier(authorization = bearerToken)
-      enrolmentsStoreService
-        .terminationByEnrolmentKey(enrolmentKey)(using newHeaderCarrier)
-        .map { res =>
-          if (res.status == 204) {
-            auditService.auditSuccessfulAgentDeleteResponse(arn, tDate, res.status)(using request)
-            Status(NO_CONTENT)
-          } else {
-            auditService.auditFailedAgentDeleteResponse(arn, tDate, res.status, res.body)(using request)
-            new Status(res.status)(res.body)
+    authService.createBearerToken(basicAuth).flatMap {
+      case Some(authorisation) =>
+        given RequestHeader = request.withHeaders(request.headers.replace(AUTHORIZATION -> authorisation.value))
+        enrolmentsStoreService
+          .terminationByEnrolmentKey(enrolmentKey)
+          .map { res =>
+            if (res.status == 204) {
+              auditService.auditSuccessfulAgentDeleteResponse(arn, tDate, res.status)(using request)
+              Status(NO_CONTENT)
+            } else {
+              auditService.auditFailedAgentDeleteResponse(arn, tDate, res.status, res.body)(using request)
+              new Status(res.status)(res.body)
+            }
           }
-        }
-        .recover { case ex => handleRecover(ex, arn, tDate, request) }
+          .recover { case ex => handleRecover(ex, arn, tDate, request) }
+      case None => Future.successful(Forbidden)
     }
   }
 

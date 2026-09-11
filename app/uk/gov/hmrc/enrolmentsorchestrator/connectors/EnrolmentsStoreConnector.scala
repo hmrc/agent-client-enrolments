@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, StringContextOp
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import uk.gov.hmrc.enrolmentsorchestrator.utilities.RequestSupport.given
 
 @Singleton()
 class EnrolmentsStoreConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(using ec: ExecutionContext) extends RequestAwareLogging {
@@ -36,7 +37,7 @@ class EnrolmentsStoreConnector @Inject() (httpClient: HttpClientV2, appConfig: A
   lazy val enrolmentsStoreBaseUrl: String = appConfig.enrolmentsStoreBaseUrl
 
   // Query Groups who have an allocated Enrolment
-  def es1GetPrincipalGroups(enrolmentKey: String)(using hc: HeaderCarrier): Future[HttpResponse] = {
+  def es1GetPrincipalGroups(enrolmentKey: String)(using rh: RequestHeader): Future[HttpResponse] = {
     val requestUrl = s"$enrolmentsStoreBaseUrl/enrolment-store-proxy/enrolment-store/enrolments/$enrolmentKey/groups?type=principal"
     httpClient.get(url"$requestUrl").execute[HttpResponse]
   }
