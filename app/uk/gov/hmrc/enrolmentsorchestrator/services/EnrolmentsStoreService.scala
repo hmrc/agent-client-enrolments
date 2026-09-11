@@ -25,7 +25,7 @@ import uk.gov.hmrc.enrolmentsorchestrator.models.EnrolmentGroupIds.*
 import uk.gov.hmrc.enrolmentsorchestrator.models.PrincipalGroupIds
 import uk.gov.hmrc.enrolmentsorchestrator.utilities.RequestAwareLogging
 import uk.gov.hmrc.http.HttpReads.Implicits.*
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -74,7 +74,6 @@ class EnrolmentsStoreService @Inject() (
   }
 
   def deleteEnrolments(arn: String, service: String, clientIdType: String, clientId: String)(using
-    hc: HeaderCarrier,
     requestHeader: RequestHeader
   ): Future[Unit] = {
     val enrolmentKey = s"$service~$clientIdType~$clientId"

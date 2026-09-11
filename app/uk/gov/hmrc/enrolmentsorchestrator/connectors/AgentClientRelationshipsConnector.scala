@@ -22,9 +22,10 @@ import play.api.mvc.RequestHeader
 import uk.gov.hmrc.enrolmentsorchestrator.config.AppConfig
 import uk.gov.hmrc.enrolmentsorchestrator.connectors.ConnectorUtils.hashString
 import uk.gov.hmrc.enrolmentsorchestrator.utilities.RequestAwareLogging
+import uk.gov.hmrc.enrolmentsorchestrator.utilities.RequestSupport.hc
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +36,6 @@ class AgentClientRelationshipsConnector @Inject() (httpClient: HttpClientV2, app
   lazy val baseUrl: String = appConfig.agentClientRelationshipsBaseUrl
 
   def cleanupInvitationStatus(arn: String, service: String, clientId: String)(using
-    hc: HeaderCarrier,
     requestHeader: RequestHeader
   ): Future[HttpResponse] = {
     httpClient

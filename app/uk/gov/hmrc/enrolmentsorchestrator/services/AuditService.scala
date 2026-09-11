@@ -54,7 +54,9 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
     audit(event)
   }
 
-  def auditSuccessfulAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int)(using request: Request[?]): Unit = {
+  def auditSuccessfulAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int)(using
+    requestHeader: RequestHeader
+  ): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
       AuditType.agentDeleteResponse,
@@ -64,14 +66,14 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
         "statusCode"           -> statusCode,
         "success"              -> true
       ),
-      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
+      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", requestHeader.path)
     )
 
     audit(event)
   }
 
   def auditFailedAgentDeleteResponse(agentReferenceNumber: String, terminationDate: Long, statusCode: Int, failureReason: String)(using
-    request: Request[?]
+    requestHeader: RequestHeader
   ): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
@@ -83,7 +85,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
         "failureReason"        -> failureReason,
         "success"              -> false
       ),
-      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", request.path)
+      tags = hc.toAuditTags("Agent Client Enrolments - Agent Delete Response", requestHeader.path)
     )
 
     audit(event)
@@ -96,7 +98,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
                                 success: Boolean,
                                 statusCode: Int,
                                 failureReason: String
-                               )(using request: Request[?]): Unit = {
+                               )(using requestHeader: RequestHeader): Unit = {
     val event = ExtendedDataEvent(
       auditSource,
       AuditType.agentClientDeleteRequest,
@@ -111,7 +113,7 @@ class AuditService @Inject() (auditConnector: AuditConnector)(using ec: Executio
       ),
       tags =
         hc.toAuditTags("Agent Client Enrolments - Agent Client Relationship Delete Request; example: insolvent trader needs decoupling from an Agent",
-                       request.path
+                       requestHeader.path
                       )
     )
 

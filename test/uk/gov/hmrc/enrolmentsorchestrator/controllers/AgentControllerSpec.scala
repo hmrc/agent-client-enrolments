@@ -46,7 +46,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(using any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
 
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any))
         .thenReturn(Future.successful(testHttpResponse))
       when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(using any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
@@ -102,7 +102,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(using any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any))
         .thenReturn(Future.failed(UpstreamErrorResponse("notAuthed", 401, 401)))
       doNothing().when(mockAuditService).auditDeleteRequest(any, any)(using any)
       doNothing().when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(using any)
@@ -123,7 +123,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
         .thenReturn(Future.successful(Some(Authorization("pls"))))
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(using any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any))
         .thenReturn(Future.successful(testHttpResponse))
 
       doNothing().when(mockAuditService).auditDeleteRequest(any, any)(using any)
@@ -144,7 +144,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
       when(mockAgentStatusChangeConnector.agentStatusChangeToTerminate(any)(using any, any))
         .thenReturn(Future.successful(testAgentStatusChangeHttpResponse))
 
-      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any, any))
+      when(mockEnrolmentsStoreService.terminationByEnrolmentKey(any)(using any))
         .thenReturn(Future.failed(new RuntimeException))
       doNothing().when(mockAuditService).auditDeleteRequest(any, any)(using any)
       doNothing().when(mockAuditService).auditFailedAgentDeleteResponse(any, any, any, any)(using any)
@@ -171,7 +171,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
   "DELETE /enrolments-orchestrator/relationships/:arn/service/:service/client/:clientIdType/:clientId" should {
 
     "return 204 when valid payload received" in new Setup {
-      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(using any, any))
+      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(using any))
         .thenReturn(Future.successful(()))
       when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(using any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
@@ -196,7 +196,7 @@ class AgentControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPer
     "return 500 when internal server error" in new Setup {
       when(mockAuthService.createBearerToken(eqTo(basicAuthHeader))(using any, any))
         .thenReturn(Future.successful(Some(Authorization("pls"))))
-      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(using any, any))
+      when(mockEnrolmentsStoreService.deleteEnrolments(any, any, any, any)(using any))
         .thenReturn(Future.failed(new Throwable))
       doNothing().when(mockAuditService).auditClientDeleteResponse(any, any, any, any, any, any, any)(using any)
 
